@@ -15,6 +15,8 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
+import static com.application.brain.parse.Parse.parseNews;
+
 public class App extends Application {
 
     private static final String PATH_TO_STYLE = "style/standard.css";
@@ -93,6 +95,7 @@ public class App extends Application {
 
         pPrimaryStage.setScene(scene);
         pPrimaryStage.show();
+        parseNews("https://news.yandex.ru/yandsearch?lr=68&cl4url=http%3A%2F%2Ftass.ru%2Fmezhdunarodnaya-panorama%2F4890594&lang=ru&stid=r_6hpt2zg7Ovq8g_wk_J&rubric=index&from=index");
     }
 
 

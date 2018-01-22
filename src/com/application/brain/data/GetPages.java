@@ -40,12 +40,22 @@ public class GetPages {
     }
 
     public static List<Element> getNews(String link) throws IOException {
+
+        List<Element> answer = new ArrayList<>();
+
         Document newsPage = getPage(link);
-        Elements rowElements = newsPage.select("img");
-        for (Element element : rowElements) {
-            System.out.println(element);
-        }
-        return new ArrayList<>();
+        Elements rowElementsImg = newsPage.select("img");
+        answer.addAll(rowElementsImg);
+        Element rowTitle = newsPage.selectFirst("h1.story__head");
+        Element rowDescription = newsPage.selectFirst("div.doc__text");
+        Element rowAgency = newsPage.selectFirst("span.doc__agency");
+        Element rowDate = newsPage.selectFirst("span.doc__time");
+        answer.add(rowTitle);
+        answer.add(rowDescription);
+        answer.add(rowAgency);
+        answer.add(rowDate);
+
+        return answer;
     }
 
     public static void main(String[] args) throws IOException {
