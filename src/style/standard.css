@@ -5,10 +5,10 @@
 
 .button {
     -fx-background-color: transparent;
-    -fx-background-radius: 15;
+    -fx-background-radius: 30;
     -fx-border-color: #769db9;
     -fx-border-width: 1;
-    -fx-border-radius: 15;
+    -fx-border-radius: 30;
     -fx-text-fill: #2b2b2b;
     -fx-text-alignment: center;
     -fx-font-size: 10pt;
@@ -24,4 +24,12 @@
     -fx-background-color: white;
     -fx-text-fill: #2b2b2b;
     -fx-border-color: white;
+}
+
+#more {
+    -fx-border-color: orangered;
+}
+
+#more:hover {
+    -fx-background-color: orangered;
 }

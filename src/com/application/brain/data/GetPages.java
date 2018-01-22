@@ -1,8 +1,8 @@
 package com.application.brain.data;
 
+import com.application.news.News;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
@@ -11,54 +11,79 @@ import java.util.List;
 
 public class GetPages {
 
-    private static Document mainPage = null;
+    private static Document MAIN_PAGE = null;
 
     private static Document getPage(String link) throws IOException {
-        if (mainPage == null) {
-            mainPage = Jsoup.connect(link).get();
+        if (MAIN_PAGE == null) {
+            MAIN_PAGE = Jsoup.connect(link).get();
         }
-        return mainPage;
+        return MAIN_PAGE;
     }
 
-    public static List<Element> getListCategories(String link) throws IOException {
-        Document mainPage = getPage(link);
-        Elements rowElements = mainPage.select("a");
-        return rowElements.subList(0, rowElements.size());
-    }
+    public static List<String> getListCategories(String link) throws IOException {
+        List<String> listCategories = new ArrayList<>();
+        Elements categories = getPage(link).select("ul");
 
-    public static List<Element> getListNews(String link) throws IOException {
-        Document mainPage = getPage(link);
-        Elements links = mainPage.select("a[href]");
-        List<Element> list = new ArrayList<>();
-
-        for (Element element : links) {
-            if (element.toString().contains("link link_theme_black link_ajax i-be") && !list.contains(element)) {
-                list.add(element);
+        for (String element : categories.toString().split("\n"))
+            if (element.contains("tabs-menu__tab tabs-menu__tab_pos_")) {
+                String catName = element.substring(element.indexOf("data-name=") + 10, element.indexOf("><"));
+                String catLink = "https://news.yandex.ru" +
+                        element.substring(element.indexOf("href=") + 6, element.indexOf("\" data-counter"));
+                listCategories.add((catName + "::" + catLink).replace("\"", ""));
             }
-        }
-        return list;
+
+        return listCategories;
     }
 
-    public static List<Element> getNews(String link) throws IOException {
+    public static List<News> getListNews(String link) throws IOException {
+        List<News> listNews = new ArrayList<>();
 
-        List<Element> answer = new ArrayList<>();
+        String elements = Jsoup.connect(link).get().select(".page-content__fixed").toString();
+        String rowMainNews = elements.substring(elements.indexOf("stories-set__main-item"), elements.indexOf("table"));
+        String rowTableNews = elements.substring(elements.indexOf("<tbody>"), elements.indexOf("</tbody>"));
 
-        Document newsPage = getPage(link);
-        Elements rowElementsImg = newsPage.select("img");
-        answer.addAll(rowElementsImg);
-        Element rowTitle = newsPage.selectFirst("h1.story__head");
-        Element rowDescription = newsPage.selectFirst("div.doc__text");
-        Element rowAgency = newsPage.selectFirst("span.doc__agency");
-        Element rowDate = newsPage.selectFirst("span.doc__time");
-        answer.add(rowTitle);
-        answer.add(rowDescription);
-        answer.add(rowAgency);
-        answer.add(rowDate);
+        News mainNews = new News();
+        String rowTitle = rowMainNews.substring(rowMainNews.indexOf("story__title"),
+                rowMainNews.indexOf("/a></h2>"));
 
-        return answer;
+        mainNews.setTitle(rowTitle.substring(rowTitle.lastIndexOf(">") + 1, rowTitle.lastIndexOf("<")));
+        mainNews.setDescription(rowMainNews.substring(rowMainNews.indexOf("story__text\">") + 14,
+                rowMainNews.indexOf("</div>\n" + "      </div>")).trim());
+        mainNews.setDate(rowMainNews.substring(rowMainNews.indexOf("story__date\">") + 14,
+                rowMainNews.indexOf("</div>\n       <span")).trim());
+        /*mainNews.setImg(new Image(rowMainNews.substring(rowMainNews.indexOf("src=\"") + 5,
+                rowMainNews.indexOf("\" alt="))));*/
+
+        listNews.add(mainNews);
+
+        for (String news : rowTableNews.split("<td class=\"stories-set__item\"")) {
+
+            try {
+
+                News fixedNews = new News();
+
+                // TODO
+
+                listNews.add(fixedNews);
+
+            } catch (ArrayIndexOutOfBoundsException ignored) {
+            }
+
+        }
+
+
+        return listNews;
+    }
+
+    public static News getNews(String link) throws IOException {
+        News news = new News();
+
+        // TODO
+
+        return news;
     }
 
     public static void main(String[] args) throws IOException {
-        getNews("https://news.yandex.ru/yandsearch?lr=2&cl4url=http%3A%2F%2Fwww.interfax.ru%2Fworld%2F595944&lang=ru&stid=RqtUyglu2IXQnLdjo9x8&rubric=index&from=index");
+        getListNews("https://news.yandex.ru/society.html?from=rubric");
     }
 }
