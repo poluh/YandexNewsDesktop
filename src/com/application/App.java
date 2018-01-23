@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.IntStream;
 
+import static com.application.action.ActionEvents.categoriesButton;
 import static com.application.action.ActionEvents.toBack;
 import static com.application.brain.data.GetPages.getListCategories;
 import static com.application.brain.data.GetPages.getListNews;
@@ -42,18 +43,15 @@ public class App extends Application {
         return gridPane;
     }
 
-    private static Node createElementMainWindow(Node newsPanel) throws Exception {
+    private static Node createElementMainWindow() throws Exception {
 
         GridPane leftGrid = new GridPane();
         GridPane mainGrid = new GridPane();
-        Node supplementalGrid;
+        GridPane supplementalGrid = createGrid();
+        ScrollPane scrollPane = new ScrollPane(supplementalGrid);
 
         leftGrid.getStyleClass().add("left-grid");
         leftGrid.setMinHeight(800);
-
-        if (newsPanel != null) {
-            supplementalGrid = newsPanel;
-        }
 
         Label categoryLabel = new Label("Категории");
         categoryLabel.setId("title");
@@ -63,9 +61,6 @@ public class App extends Application {
         topBox.setPadding(new Insets(25));
         topBox.getChildren().add(categoryLabel);
         topBox.setMinSize(Double.MAX_VALUE, 40);
-        topBox.getStyleClass().add("hbox");
-        topBox.setId("hbox1");
-        topBox.getStylesheets().add(PATH_TO_STYLE);
 
         mainGrid.add(topBox, 0, 0, 2, 1);
 
@@ -73,34 +68,32 @@ public class App extends Application {
         for (Category category : getListCategories(MAIN_PAGE)) {
             Button categoryButton = new Button(category.getName());
             categoryButton.setMinSize(140, 35);
+            categoryButton.setId(category.getLink());
+            categoriesButton(categoryButton, supplementalGrid);
+
             leftGrid.add(categoryButton, 0, i);
             i++;
         }
 
         mainGrid.add(leftGrid, 0, 1);
+        mainGrid.add(scrollPane, 1, 1);
 
         return mainGrid;
-    }
-
-    private static Node createElementCategoriesWindow(String link) throws IOException {
-        return createGrid();
-    }
-
-    private static Node createElementNewsWindow(News news) {
-        return createGrid();
     }
 
     public static void createNewsWindow(News news) {
 
     }
 
-    public static void createCategoriesWindow(String link) throws IOException {
+    public static void createCategoriesWindow(String link, GridPane gridPane) throws IOException {
+        for (News news : getListNews(link)) {
 
+        }
     }
 
     public static void createMainWindow() throws Exception {
 
-        Scene scene = new Scene((Parent) createElementMainWindow(null), 800, 500);
+        Scene scene = new Scene((Parent) createElementMainWindow(), 800, 500);
         scene.getStylesheets().add(PATH_TO_STYLE);
 
         pPrimaryStage.setScene(scene);

@@ -1,7 +1,9 @@
 package com.application.action;
 
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.layout.GridPane;
 
 import java.io.IOException;
 
@@ -10,15 +12,10 @@ import static com.application.brain.data.GetPages.getNews;
 
 public class ActionEvents {
 
-    public static void mainButton(Button mainButton) {
+    public static void categoriesButton(Button mainButton, GridPane grid) {
         mainButton.setOnAction(event -> {
             try {
-                switch (mainButton.getId()) {
-                    case "hot":
-                        createCategoriesWindow(MAIN_PAGE);
-                    default:
-                        createCategoriesWindow(mainButton.getId());
-                }
+                createCategoriesWindow(mainButton.getId(), grid);
             } catch (IOException ex) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setHeaderText("An error has occurred.");

@@ -4,6 +4,7 @@ import com.application.news.News;
 import javafx.scene.image.Image;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
@@ -36,64 +37,42 @@ public class GetPages {
         return listCategories;
     }
 
-    private static List<String> getTitleDescriptionImage(String html) {
-        List<String> answer = new ArrayList<>();
 
-        String storyTag = html.contains("story__title") ? "story__title" : "story__topic";
-
-        String rowTitle = html.substring(html.indexOf(storyTag),
-                html.indexOf("/a></h2>"));
-        answer.add((rowTitle.substring(rowTitle.lastIndexOf(">") + 1, rowTitle.lastIndexOf("<"))));
-
-        answer.add(html.substring(html.indexOf("story__text\">") + 14,
-                html.indexOf("</div>\n" + "      </div>")).trim());
-        if (html.contains("image")) {
-            answer.add(html.substring(html.indexOf("src=\"") + 5,
-                    html.indexOf("\" alt=")));
-        }
-
-        return answer;
-    }
 
     public static List<News> getListNews(String link) throws IOException {
         List<News> listNews = new ArrayList<>();
 
-        String elements = Jsoup.connect(link).get().select(".page-content__fixed").toString();
-        String rowMainNews = elements.substring(elements.indexOf("stories-set__main-item"), elements.indexOf("table"));
-        String rowTableNews = elements.substring(elements.indexOf("<tbody>"), elements.indexOf("</tbody>"));
+        Elements elements = Jsoup
+                .connect(link)
+                .userAgent("Safari")
+                .get()
+                .select(".page-content .page-content__cell");
 
+        Element mainNewsElm = elements.select(".stories-set__main-item").first();
         News mainNews = new News();
-        List<String> getInfo = getTitleDescriptionImage(rowMainNews);
-
-        mainNews.setTitle(getInfo.get(0));
-        mainNews.setDescription(getInfo.get(1));
-        mainNews.setDate(rowMainNews.substring(rowMainNews.indexOf("story__date\">") + 14,
-                rowMainNews.indexOf("</div>\n       <span")).trim().replace("&nbsp;", " "));
-        //mainNews.setImg(new Image(getInfo.get(2)));
-
+        mainNews.setTitle(mainNewsElm.selectFirst("h2 a").text());
+        mainNews.setDescription(mainNewsElm.selectFirst(".story__text").text());
+        mainNews.setImg(mainNewsElm.selectFirst(".image").attr("src"));
+        mainNews.setDate(mainNewsElm.selectFirst(".story__date").text());
+        mainNews.setLink(MAIN_PAGE + mainNewsElm.selectFirst("h2 a").attr("href"));
         listNews.add(mainNews);
-        System.out.println(rowMainNews);
 
-        for (String news : rowTableNews.split("<td class=\"stories-set__item\"")) {
+        for (Element blockNews : elements) {
+            for (Element rowNews : blockNews.select(".stories-set__item")) {
+                News news = new News();
+                news.setTitle(rowNews.selectFirst("h2 a").text());
+                news.setDate(rowNews.selectFirst(".story__date").text());
+                news.setLink(MAIN_PAGE + rowNews.selectFirst("h2 a").attr("href"));
+                news.setDescription("");
 
-            try {
+                String imgSrc = "";
+                try {
+                    imgSrc = rowNews.selectFirst(".image").attr("src");
+                } catch (NullPointerException ignored) {}
 
-                List<String> newGetInfo = getTitleDescriptionImage(news);
-                News fixedNews = new News();
-
-                fixedNews.setTitle(newGetInfo.get(0));
-                fixedNews.setDate(rowTableNews.substring(rowTableNews.indexOf("story__date") + 14,
-                        rowTableNews.indexOf("</div>\n        <span")).replace("&nbsp;", " "));
-
-                //if (newGetInfo.size() == 3) {
-                //    fixedNews.setImg(new Image(getInfo.get(2)));
-                //}
-
-                listNews.add(fixedNews);
-
-            } catch (ArrayIndexOutOfBoundsException | StringIndexOutOfBoundsException ignored) {
+                news.setImg(imgSrc);
+                listNews.add(news);
             }
-
         }
 
         return listNews;
@@ -108,6 +87,6 @@ public class GetPages {
     }
 
     public static void main(String[] args) throws IOException {
-        getListNews("https://news.yandex.ru/society.html?from=rubric");
+        getListNews("https://news.yandex.ru/index.html?from=region");
     }
 }

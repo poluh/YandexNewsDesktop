@@ -6,23 +6,25 @@ import java.util.List;
 
 public class News {
 
-    private String title, description, agency, date;
-    private List<Image> img;
-    private Image imgO;
+    private String title, description, agency, date, link;
+    private List<String> img;
+    private String imgO;
 
-    public News(String title, String description, String agency, String date, List<Image> img) {
+    public News(String title, String description, String agency, String date, String link, List<String> img) {
         this.title = title;
         this.description = description;
         this.agency = agency;
         this.date = date;
+        this.link = link;
         this.img = img;
     }
 
-    public News(String title, String description, String agency, String date, Image imgO) {
+    public News(String title, String description, String agency, String date, String link, String imgO) {
         this.title = title;
         this.description = description;
         this.agency = agency;
         this.date = date;
+        this.link = link;
         this.imgO = imgO;
     }
 
@@ -61,19 +63,27 @@ public class News {
         this.date = date;
     }
 
-    public List<Image> getImg() {
+    public List<String> getImg() {
         return img;
     }
 
-    public void setImg(List<Image> img) {
+    public void setImg(List<String> img) {
         this.img = img;
     }
 
-    public Image getImgO() {
+    public String getImgO() {
         return imgO;
     }
 
-    public void setImg(Image imgO) {
+    public String getLink() {
+        return link;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
+    }
+
+    public void setImg(String imgO) {
         this.imgO = imgO;
     }
 
