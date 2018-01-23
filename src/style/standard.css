@@ -64,10 +64,23 @@
     -fx-text-fill: black;
 }
 
-#title {
+#categories {
     -fx-font-size: 20;
     -fx-opacity: 0.9;
     -fx-text-fill: #ECF0F1;
+}
+
+#title {
+    -fx-font-size: 25;
+    -fx-opacity: 0.8;
+    -fx-wrap-text: true;
+
+}
+
+#description {
+    -fx-font-size: 15;
+    -fx-opacity: 0.9;
+    -fx-wrap-text: true;
 }
 
 #date {
