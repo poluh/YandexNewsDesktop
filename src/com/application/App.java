@@ -1,10 +1,13 @@
 package com.application;
 
 import com.application.action.ActionEvents;
+import com.application.brain.data.Category;
 import com.application.news.News;
+import com.sun.javafx.geom.Rectangle;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -13,11 +16,14 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import java.io.IOException;
+import java.util.List;
 import java.util.stream.IntStream;
 
+import static com.application.action.ActionEvents.toBack;
 import static com.application.brain.data.GetPages.getListCategories;
 import static com.application.brain.data.GetPages.getListNews;
 
@@ -36,81 +42,65 @@ public class App extends Application {
         return gridPane;
     }
 
-    public static Node createElementMainWindow() throws IOException {
+    private static Node createElementMainWindow(Node newsPanel) throws Exception {
 
-        GridPane gridPane = createGrid();
+        GridPane leftGrid = new GridPane();
+        GridPane mainGrid = new GridPane();
+        Node supplementalGrid;
 
-        int i = 0, j = 0;
-        for (String name : getListCategories(MAIN_PAGE)) {
+        leftGrid.getStyleClass().add("left-grid");
+        leftGrid.setMinHeight(800);
 
-            Button categories = new Button(name.split("::")[0]);
-            if (i == 1 && j == 0) {
-                categories.setMinSize(450, 140);
-                gridPane.add(categories, i, j, 3, 1);
-                i += 2;
-            } else {
-                categories.setMinSize(140, 140);
-                gridPane.add(categories, i, j);
-            }
-            categories.setId(name.split("::")[1]);
-            ActionEvents.mainButton(categories);
-            i++;
-            if (i == 5) {
-                j++;
-                i = 0;
-            }
+        if (newsPanel != null) {
+            supplementalGrid = newsPanel;
         }
 
-        Button more = new Button("Обвновиться");
-        more.setMinSize(140, 140);
-        more.setId("more");
+        Label categoryLabel = new Label("Категории");
+        categoryLabel.setId("title");
 
-        // TODO Update button ^
+        HBox topBox = new HBox();
+        topBox.setAlignment(Pos.CENTER_LEFT);
+        topBox.setPadding(new Insets(25));
+        topBox.getChildren().add(categoryLabel);
+        topBox.setMinSize(Double.MAX_VALUE, 40);
+        topBox.getStyleClass().add("hbox");
+        topBox.setId("hbox1");
+        topBox.getStylesheets().add(PATH_TO_STYLE);
 
-        gridPane.add(more, 4, 2);
+        mainGrid.add(topBox, 0, 0, 2, 1);
 
-        return gridPane;
+        int i = 0;
+        for (Category category : getListCategories(MAIN_PAGE)) {
+            Button categoryButton = new Button(category.getName());
+            categoryButton.setMinSize(140, 35);
+            leftGrid.add(categoryButton, 0, i);
+            i++;
+        }
+
+        mainGrid.add(leftGrid, 0, 1);
+
+        return mainGrid;
     }
 
     private static Node createElementCategoriesWindow(String link) throws IOException {
-        GridPane gridPane = createGrid();
-
-
-
-        return new ScrollPane(gridPane);
+        return createGrid();
     }
 
     private static Node createElementNewsWindow(News news) {
-        GridPane gridPane = createGrid();
-        ScrollPane scrollPane = new ScrollPane(gridPane);
-
-        gridPane.add(new Label(news.getTitle()), 0, 0, 3, 1);
-        IntStream.range(0, 3).forEach(i -> gridPane.add(new ImageView(news.getImg().get(i)), i, 1));
-        gridPane.add(new Text(news.getDescription()), 0, 2, 3, 1);
-        gridPane.add(new Label(news.getAgency() + news.getDate()), 3, 3);
-
-        return scrollPane;
+        return createGrid();
     }
 
     public static void createNewsWindow(News news) {
-        Scene scene = new Scene((Parent) createElementNewsWindow(news), 800, 500);
-        scene.getStylesheets().add(PATH_TO_STYLE);
 
-        pPrimaryStage.setScene(scene);
-        pPrimaryStage.show();
     }
 
     public static void createCategoriesWindow(String link) throws IOException {
-        Scene scene = new Scene((Parent) createElementCategoriesWindow(link), 800, 500);
-        scene.getStylesheets().add(PATH_TO_STYLE);
 
-        pPrimaryStage.setScene(scene);
-        pPrimaryStage.show();
     }
 
-    private static void createMainWindow() throws IOException {
+    public static void createMainWindow() throws Exception {
 
-        Scene scene = new Scene((Parent) createElementMainWindow(), 800, 500);
+        Scene scene = new Scene((Parent) createElementMainWindow(null), 800, 500);
         scene.getStylesheets().add(PATH_TO_STYLE);
 
         pPrimaryStage.setScene(scene);

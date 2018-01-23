@@ -69,6 +69,10 @@ public class News {
         this.img = img;
     }
 
+    public Image getImgO() {
+        return imgO;
+    }
+
     public void setImg(Image imgO) {
         this.imgO = imgO;
     }

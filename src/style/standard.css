@@ -1,22 +1,28 @@
 .root {
-    -fx-background-color: #ECF0F1;
-    -fx-border-color: #ECF0F1;
+    -fx-background-color: #2B4666;
+    -fx-border-color: #1A2739;
 }
+
+.left-grid {
+    -fx-background-color: #1A2739;
+}
+
+/*
+ * Button settings start
+ */
 
 .button {
     -fx-background-color: transparent;
-    -fx-background-radius: 30;
-    -fx-border-color: #769db9;
-    -fx-border-width: 1;
-    -fx-border-radius: 30;
-    -fx-text-fill: #2b2b2b;
+    -fx-background-radius: 0;
+    -fx-border-width: 0;
+    -fx-border-radius: 0;
+    -fx-text-fill: #f0f0f0;
     -fx-text-alignment: center;
     -fx-font-size: 10pt;
 }
 
 .button:hover {
-    -fx-background-color: #769db9;
-    -fx-border-color: #769db9;
+    -fx-background-color: #2B4666;
     -fx-text-fill: #ECF0F1;
 }
 
@@ -32,4 +38,46 @@
 
 #more:hover {
     -fx-background-color: orangered;
+}
+
+#back {
+    -fx-border-radius: 0;
+    -fx-background-color: orangered;
+    -fx-background-radius: 0;
+    -fx-border-color: orangered;
+}
+
+#back:hover {
+    -fx-opacity: 0.7;
+}
+
+/*
+ * Button settings end
+ */
+
+/*
+ * Label settings start
+ */
+
+.label {
+    -fx-font-size: 12;
+    -fx-text-fill: black;
+}
+
+#title {
+    -fx-font-size: 20;
+    -fx-opacity: 0.9;
+    -fx-text-fill: #ECF0F1;
+}
+
+#date {
+    -fx-opacity: 0.4;
+}
+
+/*
+ * Label settings end
+ */
+
+.hbox {
+    -fx-background-color: #2B4666;
 }

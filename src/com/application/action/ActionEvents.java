@@ -5,9 +5,7 @@ import javafx.scene.control.Button;
 
 import java.io.IOException;
 
-import static com.application.App.MAIN_PAGE;
-import static com.application.App.createCategoriesWindow;
-import static com.application.App.createNewsWindow;
+import static com.application.App.*;
 import static com.application.brain.data.GetPages.getNews;
 
 public class ActionEvents {
@@ -35,6 +33,16 @@ public class ActionEvents {
             try {
                 createNewsWindow(getNews(link));
             } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    public static void toBack(Button button) {
+        button.setOnAction(event -> {
+            try {
+                createMainWindow();
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         });
