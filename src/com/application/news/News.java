@@ -2,6 +2,7 @@ package com.application.news;
 
 import javafx.scene.image.Image;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class News {
@@ -86,6 +87,19 @@ public class News {
     public void setImg(String imgO) {
         this.imgO = imgO;
     }
+
+    public static List<News> divideAndRule(List<News> newsList) {
+        List<News> newsImg = new ArrayList<>();
+        List<News> newsNotImg = new ArrayList<>();
+        for (News news : newsList) {
+            if (news.getImgO().isEmpty()) {
+                newsNotImg.add(news);
+            } else newsImg.add(news);
+        }
+        newsImg.addAll(newsNotImg);
+        return newsImg;
+    }
+
 
     @Override
     public String toString() {

@@ -1,13 +1,10 @@
 package com.application;
 
-import com.application.action.ActionEvents;
 import com.application.brain.data.Category;
 import com.application.news.News;
-import com.sun.javafx.geom.Rectangle;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -18,16 +15,13 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+
 import java.io.IOException;
-import java.util.List;
 import java.util.Objects;
-import java.util.stream.IntStream;
 
 import static com.application.action.ActionEvents.categoriesButton;
-import static com.application.action.ActionEvents.toBack;
 import static com.application.brain.data.GetPages.getListCategories;
 import static com.application.brain.data.GetPages.getListNews;
 
@@ -50,7 +44,6 @@ public class App extends Application {
 
         GridPane leftGrid = new GridPane();
         GridPane mainGrid = new GridPane();
-        GridPane supplementalGrid = createGrid();
 
         leftGrid.getStyleClass().add("left-grid");
         leftGrid.setMinHeight(800);
@@ -71,16 +64,13 @@ public class App extends Application {
             Button categoryButton = new Button(category.getName());
             categoryButton.setMinSize(140, 50);
             categoryButton.setId(category.getLink());
-            categoriesButton(categoryButton, supplementalGrid);
+            categoriesButton(categoryButton, mainGrid);
 
             leftGrid.add(categoryButton, 0, i);
             i++;
         }
-        ScrollPane scrollPane = new ScrollPane();
-        scrollPane.setContent(supplementalGrid);
 
         mainGrid.add(leftGrid, 0, 1);
-        mainGrid.add(scrollPane, 1, 1);
 
         return mainGrid;
     }
@@ -88,13 +78,61 @@ public class App extends Application {
     public static void createNewsWindow(News news) {
     }
 
+    private static HBox createNewsComponent(Label label, boolean isMainNews) {
+        HBox hBox = new HBox();
+        hBox.setMaxWidth(isMainNews ? 500 : 300);
+        hBox.getChildren().add(label);
+        if (Objects.equals(label.getId(), "date")) hBox.setAlignment(Pos.BOTTOM_LEFT);
+        return hBox;
+    }
 
-    public static void createCategoriesWindow(String link, GridPane gridPane) throws IOException {
-        gridPane.getChildren().clear();
+    public static void createCategoriesWindow(String link, GridPane mainGrid) throws IOException {
+
+        GridPane gridPane = createGrid();
+
         int i = 0, j = 0;
-        for (News news : getListNews(link)) {
-            // TODO
+        boolean isMainNews = true;
+        for (News news : News.divideAndRule(getListNews(link))) {
+            Label title = new Label(news.getTitle());
+            title.setId("title");
+            Label date = new Label(news.getDate());
+            date.setId("date");
+            ImageView image = !news.getImgO().isEmpty() ? new ImageView( new Image(news.getImgO())) : null;
+
+            if (isMainNews) {
+                GridPane miniGrid = createGrid();
+
+                miniGrid.add(image, i, j, 1, 3);
+
+                Label description = new Label(news.getDescription());
+                description.setId("description");
+
+                miniGrid.add(createNewsComponent(title, true), i + 2, j);
+                miniGrid.add(createNewsComponent(description, true), i + 2, j + 1);
+                miniGrid.add(createNewsComponent(date, true), i + 2, j + 2);
+
+                gridPane.add(miniGrid, 0, 0, 3, 1);
+                isMainNews = false;
+
+                j += 3;
+            } else {
+                if (image != null) gridPane.add(image, i, j);
+                gridPane.add(createNewsComponent(title, false), i, j + 1);
+                gridPane.add(createNewsComponent(date, false), i, j + 2);
+                i++;
+                if (i == 3) {
+                    i = 0;
+                    j += 3;
+                }
+
+            }
+
         }
+        ScrollPane scrollPane = new ScrollPane(gridPane);
+        scrollPane.setMaxSize(1200, 660);
+        VBox vBox = new VBox();
+        vBox.getChildren().add(scrollPane);
+        mainGrid.add(vBox, 1, 1);
     }
 
     public static void createMainWindow() throws Exception {

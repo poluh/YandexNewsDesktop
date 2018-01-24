@@ -39,7 +39,7 @@ public class GetPages {
 
 
 
-    public static List<News> getListNews(String link) throws IOException {
+    public static List<News> getListNews(String link) throws Exception {
         List<News> listNews = new ArrayList<>();
 
         Elements elements = Jsoup
@@ -86,7 +86,7 @@ public class GetPages {
         return news;
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
         getListNews("https://news.yandex.ru/index.html?from=region");
     }
 }
