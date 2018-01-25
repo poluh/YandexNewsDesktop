@@ -1,6 +1,7 @@
 package com.application;
 
 import com.application.brain.data.Category;
+import com.application.brain.data.Citation;
 import com.application.news.News;
 import javafx.application.Application;
 import javafx.geometry.Insets;
@@ -15,13 +16,16 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.IntStream;
 
 import static com.application.action.ActionEvents.categoriesButton;
+import static com.application.action.ActionEvents.openNews;
 import static com.application.brain.data.GetPages.getListCategories;
 import static com.application.brain.data.GetPages.getListNews;
 
@@ -75,18 +79,58 @@ public class App extends Application {
         return mainGrid;
     }
 
-    public static void createNewsWindow(News news) {
+    public static void createNewsWindow(News news, GridPane mainGrid) {
+        mainGrid.getChildren().remove(1, 1);
+
+        GridPane gridPane = createGrid();
+        List<String> imageRef = news.getImg();
+        Label title = new Label(news.getTitle());
+        title.setId("title");
+        Label description = new Label(news.getDescription());
+        description.setId("description");
+        Label date = new Label(news.getDate());
+        date.setId("date");
+
+        gridPane.add(createNewsComponent(title, true), 0, 0, 3, 1);
+        IntStream.range(0, imageRef.size())
+                .forEach(i -> gridPane.add(new ImageView(new Image(imageRef.get(i))), i, 1));
+        gridPane.add(createNewsComponent(description, true),
+                0, 2, 3, 1);
+        if (news.getCitation() != null) {
+            Citation citation = news.getCitation();
+            Label text = new Label(citation.getText());
+            text.setId("description");
+            Label info = new Label(citation.getInfo());
+            info.setId("date");
+
+            StackPane image = new StackPane(new ImageView(citation.getImage()));
+            image.setId("stack-pane");
+
+            GridPane miniGrid = createGrid();
+            miniGrid.add(image, 0, 3);
+            miniGrid.add(createNewsComponent(text, false), 1, 3);
+            miniGrid.add(createNewsComponent(info, false), 1, 4);
+            miniGrid.setId("citation-grid");
+
+            gridPane.add(miniGrid, 0, 3, 3, 1);
+        }
+
+        ScrollPane scrollPane = new ScrollPane(gridPane);
+        scrollPane.setMinSize(1200, 660);
+        VBox vBox = new VBox();
+        vBox.getChildren().add(scrollPane);
+        mainGrid.add(vBox, 1, 1);
     }
 
     private static HBox createNewsComponent(Label label, boolean isMainNews) {
         HBox hBox = new HBox();
-        hBox.setMaxWidth(isMainNews ? 500 : 300);
+        hBox.setMaxWidth(isMainNews ? 550 : 270);
         hBox.getChildren().add(label);
         if (Objects.equals(label.getId(), "date")) hBox.setAlignment(Pos.BOTTOM_LEFT);
         return hBox;
     }
 
-    public static void createCategoriesWindow(String link, GridPane mainGrid) throws IOException {
+    public static void createCategoriesWindow(String link, GridPane mainGrid) throws Exception {
 
         GridPane gridPane = createGrid();
 
@@ -97,10 +141,12 @@ public class App extends Application {
             title.setId("title");
             Label date = new Label(news.getDate());
             date.setId("date");
-            ImageView image = !news.getImgO().isEmpty() ? new ImageView( new Image(news.getImgO())) : null;
+            ImageView image = !news.getImgO().isEmpty() ? new ImageView(new Image(news.getImgO())) : null;
 
             if (isMainNews) {
                 GridPane miniGrid = createGrid();
+                miniGrid.setId("news-grid");
+                openNews(miniGrid, news.getLink(), mainGrid);
 
                 miniGrid.add(image, i, j, 1, 3);
 
@@ -116,9 +162,14 @@ public class App extends Application {
 
                 j += 3;
             } else {
-                if (image != null) gridPane.add(image, i, j);
-                gridPane.add(createNewsComponent(title, false), i, j + 1);
-                gridPane.add(createNewsComponent(date, false), i, j + 2);
+                GridPane miniGrid = createGrid();
+                if (image != null) miniGrid.add(image, 0, 0);
+                miniGrid.add(createNewsComponent(title, false), 0, 1);
+                miniGrid.add(createNewsComponent(date, false), 0, 2);
+                miniGrid.setId("news-grid");
+                openNews(miniGrid, news.getLink(), mainGrid);
+
+                gridPane.add(miniGrid, i, j);
                 i++;
                 if (i == 3) {
                     i = 0;

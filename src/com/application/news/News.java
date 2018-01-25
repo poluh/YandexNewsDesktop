@@ -1,5 +1,6 @@
 package com.application.news;
 
+import com.application.brain.data.Citation;
 import javafx.scene.image.Image;
 
 import java.util.ArrayList;
@@ -7,9 +8,9 @@ import java.util.List;
 
 public class News {
 
-    private String title, description, agency, date, link;
+    private String title, description, agency, date, link, imgO;
     private List<String> img;
-    private String imgO;
+    private Citation citation;
 
     public News(String title, String description, String agency, String date, String link, List<String> img) {
         this.title = title;
@@ -104,5 +105,13 @@ public class News {
     @Override
     public String toString() {
         return title + "\n" + description + "\n" + agency + " : " + date;
+    }
+
+    public Citation getCitation() {
+        return citation;
+    }
+
+    public void setCitation(Citation citation) {
+        this.citation = citation;
     }
 }

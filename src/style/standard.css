@@ -3,6 +3,28 @@
     -fx-border-color: #1A2739;
 }
 
+#news-grid {
+    -fx-background-color: #f5f9fa;
+    -fx-border-color: #3e6f9b;
+    -fx-background-radius: 5;
+    -fx-border-radius: 5;
+}
+
+#news-grid:hover {
+    -fx-background-color: #e2e6e7;
+}
+
+#news-grid:pressed {
+    -fx-background-color: #ffffff;
+}
+
+#citation-grid {
+    -fx-background-color: #f5f9fa;
+    -fx-border-color: #3e6f9b;
+    -fx-background-radius: 5;
+    -fx-border-radius: 5;
+}
+
 .left-grid {
     -fx-background-color: #1A2739;
 }
@@ -91,6 +113,7 @@
  * Label settings end
  */
 
-.hbox {
-    -fx-background-color: #2B4666;
+#stack-pane {
+    -fx-border-radius: 50;
+    -fx-background-radius: 50;
 }

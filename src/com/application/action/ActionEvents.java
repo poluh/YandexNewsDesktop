@@ -21,14 +21,16 @@ public class ActionEvents {
                 alert.setHeaderText("An error has occurred.");
                 alert.setContentText("Check your Internet connection.");
                 alert.showAndWait();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         });
     }
 
-    public static void openNews(Button button, String link) {
-        button.setOnAction(event -> {
+    public static void openNews(GridPane gridPane, String link, GridPane mainGrid) {
+        gridPane.setOnMouseClicked(event -> {
             try {
-                createNewsWindow(getNews(link));
+                createNewsWindow(getNews(link), mainGrid);
             } catch (IOException e) {
                 e.printStackTrace();
             }
