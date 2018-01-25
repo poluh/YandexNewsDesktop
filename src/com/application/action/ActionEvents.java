@@ -6,6 +6,7 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
 
 import java.io.IOException;
+import java.util.List;
 
 import static com.application.App.*;
 import static com.application.brain.data.GetPages.getNews;
@@ -37,16 +38,17 @@ public class ActionEvents {
         });
     }
 
-    public static void toBack(Button button) {
+    public static void toBack(Button button, GridPane mainGrid, List<Node> node) {
         button.setOnAction(event -> {
-            try {
-                createMainWindow();
-            } catch (Exception e) {
-                e.printStackTrace();
+            mainGrid.getChildren().remove(node.get(node.size() - 1));
+            node.remove(node.size() - 1);
+            if (node.size() == 1) {
+                button.setVisible(false);
+                node.clear();
+            } else {
+                mainGrid.add(node.get(node.size() - 1), 1, 1);
             }
         });
     }
-
-    // TODO create Action Event for show one news
 
 }

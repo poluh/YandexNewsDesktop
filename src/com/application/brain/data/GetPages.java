@@ -6,7 +6,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,18 +14,26 @@ public class GetPages {
 
     private static Document MAIN_PAGE = null;
     private static final String YANDEX = "https://news.yandex.ru";
-    private static Button toBack = new Button("Назад");
 
-    private static Document getPage(String link) throws IOException {
+    private static Document getCategoryPage(String link) throws IOException {
         if (MAIN_PAGE == null) {
-            MAIN_PAGE = Jsoup.connect(link).userAgent("Safari").get();
+            MAIN_PAGE = getPage(link);
         }
         return MAIN_PAGE;
     }
 
+    private static Document getPage(String link) throws IOException {
+        try {
+            return Jsoup.connect(link).userAgent("Safari").get();
+        } catch (IllegalArgumentException ex) {
+            System.out.println(link);
+            throw new IllegalArgumentException(ex.getMessage());
+        }
+    }
+
     public static List<Category> getListCategories(String link) throws Exception {
         List<Category> listCategories = new ArrayList<>();
-        Elements categories = getPage(link).select("li");
+        Elements categories = getCategoryPage(link).select("li");
 
         for (Element element : categories) {
             if (element.select("a").text() != null &&
@@ -42,11 +49,7 @@ public class GetPages {
     public static List<News> getListNews(String link) throws Exception {
         List<News> listNews = new ArrayList<>();
 
-        Elements elements = Jsoup
-                .connect(link)
-                .userAgent("Safari")
-                .get()
-                .select(".page-content .page-content__cell");
+        Elements elements = getPage(link).select(".page-content .page-content__cell");
 
         Element mainNewsElm = elements.select(".stories-set__main-item").first();
         News mainNews = new News();
@@ -90,11 +93,7 @@ public class GetPages {
     public static News getNews(String link) throws IOException {
         News news = new News();
 
-        Element rowNews = Jsoup
-                .connect(link)
-                .userAgent("Safari")
-                .get()
-                .selectFirst(".story__annot");
+        Element rowNews = getPage(link).selectFirst(".story__annot");
 
         List<String> media = new ArrayList<>();
         for (Element element : rowNews.select(".story-media__item")) {
@@ -105,6 +104,7 @@ public class GetPages {
         news.setDescription(rowNews.selectFirst(".story__main .doc__text").text());
         news.setAgency(rowNews.selectFirst(".story__main .doc__content a .doc__info .doc__agency").text());
         news.setDate(rowNews.selectFirst(".story__main .doc__content a .doc__info .doc__time").text());
+        news.setLink(link);
 
         if (rowNews.selectFirst(".citation") != null) {
             news.setCitation(getCitation(rowNews.selectFirst(".citation")));
@@ -113,7 +113,22 @@ public class GetPages {
         return news;
     }
 
+    public static List<News> getInterestingNews(String link) throws IOException {
+        List<News> answer = new ArrayList<>();
+        Elements rowNews = getPage(link).select(".widget__items .widget__item");
+        try {
+            for (Element element : rowNews.subList(0, 5)) {
+                News news = new News();
+                news.setTitle(element.selectFirst(".story__title").text());
+                news.setDate(element.selectFirst(".story__date").text().replace("&nbsp;", " "));
+                news.setLink(YANDEX + element.selectFirst("a").attr("href"));
+                answer.add(news);
+            }
+        } catch (NullPointerException ignored) {
+        }
+        return answer;
+    }
+
     public static void main(String[] args) throws Exception {
-        getListNews("https://news.yandex.ru");
     }
 }

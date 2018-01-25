@@ -1,5 +1,6 @@
 package com.application;
 
+import com.application.action.ActionEvents;
 import com.application.brain.data.Category;
 import com.application.brain.data.Citation;
 import com.application.news.News;
@@ -20,12 +21,16 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.IntStream;
 
 import static com.application.action.ActionEvents.categoriesButton;
 import static com.application.action.ActionEvents.openNews;
+import static com.application.action.ActionEvents.toBack;
+import static com.application.brain.data.GetPages.getInterestingNews;
 import static com.application.brain.data.GetPages.getListCategories;
 import static com.application.brain.data.GetPages.getListNews;
 
@@ -34,6 +39,8 @@ public class App extends Application {
     private static final String PATH_TO_STYLE = "style/standard.css";
     private static final String MAIN_PAGE = "https://news.yandex.ru/";
     private static Stage pPrimaryStage = null;
+    private static Button toBack = new Button("Назад");
+    private static List<Node> cacheBackWindow = new ArrayList<>();
 
     private static GridPane createGrid() {
         GridPane gridPane = new GridPane();
@@ -55,13 +62,23 @@ public class App extends Application {
         Label categoryLabel = new Label("Категории");
         categoryLabel.setId("categories");
 
-        HBox topBox = new HBox();
-        topBox.setAlignment(Pos.CENTER_LEFT);
-        topBox.setPadding(new Insets(25));
-        topBox.getChildren().add(categoryLabel);
-        topBox.setMinSize(Double.MAX_VALUE, 40);
+        HBox categoryBox = new HBox();
+        categoryBox.setAlignment(Pos.CENTER_LEFT);
+        categoryBox.setPadding(new Insets(25));
+        categoryBox.getChildren().add(categoryLabel);
+        categoryBox.setMinSize(400, 40);
 
-        mainGrid.add(topBox, 0, 0, 2, 1);
+        HBox backBox = new HBox();
+        backBox.setAlignment(Pos.CENTER_RIGHT);
+        backBox.setPadding(new Insets(25));
+        toBack.setVisible(false);
+        toBack.setId("back");
+        backBox.getChildren().add(toBack);
+        backBox.setMinSize(400, 40);
+        toBack(toBack, mainGrid, cacheBackWindow);
+
+        mainGrid.add(categoryBox, 0, 0, 2, 1);
+        mainGrid.add(backBox, 1, 0, 2, 1);
 
         int i = 0;
         for (Category category : getListCategories(MAIN_PAGE)) {
@@ -79,10 +96,38 @@ public class App extends Application {
         return mainGrid;
     }
 
-    public static void createNewsWindow(News news, GridPane mainGrid) {
-        mainGrid.getChildren().remove(1, 1);
+    private static void createInterestingNews(String link, GridPane mainGrid) throws IOException {
+        Label titleInteresting = new Label("Вам может быть интересно:");
+        titleInteresting.setId("title");
+        mainGrid.add(titleInteresting, 4, 0);
+
+        int i = 1;
+        for (News news : getInterestingNews(link)) {
+            GridPane gridPane = createGrid();
+            gridPane.setId("news-grid");
+            openNews(gridPane, news.getLink(), mainGrid);
+
+            Label title = new Label(news.getTitle());
+            title.setId("description");
+            Label date = new Label(news.getDate());
+            date.setId("date");
+
+            gridPane.add(createNewsComponent(title, false), 0, 0);
+            gridPane.add(createNewsComponent(date, false), 0, 1);
+            mainGrid.add(gridPane, 4, i);
+            i++;
+        }
+    }
+
+    public static void createNewsWindow(News news, GridPane mainGrid) throws IOException {
+
+        toBack.setVisible(true);
+        if (cacheBackWindow.size() > 1) {
+            mainGrid.getChildren().remove(1, 1);
+        }
 
         GridPane gridPane = createGrid();
+        createInterestingNews(news.getLink(), gridPane);
         List<String> imageRef = news.getImg();
         Label title = new Label(news.getTitle());
         title.setId("title");
@@ -116,10 +161,12 @@ public class App extends Application {
         }
 
         ScrollPane scrollPane = new ScrollPane(gridPane);
-        scrollPane.setMinSize(1200, 660);
+        scrollPane.setMinSize(1090, 660);
         VBox vBox = new VBox();
         vBox.getChildren().add(scrollPane);
         mainGrid.add(vBox, 1, 1);
+
+        cacheBackWindow.add(vBox);
     }
 
     private static HBox createNewsComponent(Label label, boolean isMainNews) {
@@ -180,15 +227,18 @@ public class App extends Application {
 
         }
         ScrollPane scrollPane = new ScrollPane(gridPane);
-        scrollPane.setMaxSize(1200, 660);
+        scrollPane.setMaxSize(1090, 660);
+        scrollPane.setMinSize(1090, 660);
         VBox vBox = new VBox();
         vBox.getChildren().add(scrollPane);
         mainGrid.add(vBox, 1, 1);
+
+        cacheBackWindow.add(vBox);
     }
 
     public static void createMainWindow() throws Exception {
 
-        Scene scene = new Scene((Parent) createElementMainWindow(), 1200, 700);
+        Scene scene = new Scene((Parent) createElementMainWindow(), 1230, 700);
         scene.getStylesheets().add(PATH_TO_STYLE);
 
         pPrimaryStage.setScene(scene);
@@ -199,6 +249,7 @@ public class App extends Application {
     public void start(Stage primaryStage) throws Exception {
         pPrimaryStage = primaryStage;
         pPrimaryStage.setTitle("Yandex News");
+        pPrimaryStage.setResizable(false);
         createMainWindow();
     }
 

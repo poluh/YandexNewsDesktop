@@ -29,6 +29,29 @@
     -fx-background-color: #1A2739;
 }
 
+.scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-border-radius: 30;
+    -fx-background-radius: 30;
+    -fx-opacity: 0.3;
+}
+
+.increment-button, .decrement-button {
+    -fx-opacity: 0;
+}
+
+.scroll-bar:vertical .track {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-radius: 30;
+}
+
+.scroll-bar:vertical .thumb {
+    -fx-background-color: #3c6996;
+    -fx-background-radius: 30;
+}
+
+
 /*
  * Button settings start
  */
@@ -54,23 +77,22 @@
     -fx-border-color: white;
 }
 
-#more {
-    -fx-border-color: orangered;
-}
-
-#more:hover {
-    -fx-background-color: orangered;
-}
-
 #back {
     -fx-border-radius: 0;
-    -fx-background-color: orangered;
+    -fx-background-color: #2B4666;
     -fx-background-radius: 0;
-    -fx-border-color: orangered;
+    -fx-border-width: 0;
+    -fx-font-size: 20;
+    -fx-opacity: 0.9;
+    -fx-text-fill: #ECF0F1;
 }
 
 #back:hover {
     -fx-opacity: 0.7;
+}
+
+#back:pressed {
+    -fx-background-color: #ECF0F1;
 }
 
 /*
