@@ -1,5 +1,7 @@
 package com.application.brain.data;
 
+import com.application.brain.data.auxiliaryClasses.Category;
+import com.application.brain.data.auxiliaryClasses.Citation;
 import com.application.news.News;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -12,21 +14,21 @@ import java.util.List;
 
 public class GetPages {
 
-    private static Document MAIN_PAGE = null;
+
     private static final String YANDEX = "https://news.yandex.ru";
+    private static Document CATEGORY_PAGE = null;
 
     private static Document getCategoryPage(String link) throws IOException {
-        if (MAIN_PAGE == null) {
-            MAIN_PAGE = getPage(link);
+        if (CATEGORY_PAGE == null) {
+            CATEGORY_PAGE = getPage(link);
         }
-        return MAIN_PAGE;
+        return CATEGORY_PAGE;
     }
 
     private static Document getPage(String link) throws IOException {
         try {
             return Jsoup.connect(link).userAgent("Safari").get();
         } catch (IllegalArgumentException ex) {
-            System.out.println(link);
             throw new IllegalArgumentException(ex.getMessage());
         }
     }
@@ -117,7 +119,7 @@ public class GetPages {
         List<News> answer = new ArrayList<>();
         Elements rowNews = getPage(link).select(".widget__items .widget__item");
         try {
-            for (Element element : rowNews.subList(0, 5)) {
+            for (Element element : rowNews) {
                 News news = new News();
                 news.setTitle(element.selectFirst(".story__title").text());
                 news.setDate(element.selectFirst(".story__date").text().replace("&nbsp;", " "));

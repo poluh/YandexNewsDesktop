@@ -1,10 +1,10 @@
-package com.application.brain.data;
+package com.application.brain.data.auxiliaryClasses;
 
 public class Category {
 
     private String name, link;
 
-    Category(String name, String link) {
+    public Category(String name, String link) {
         this.name = name;
         this.link = link;
     }

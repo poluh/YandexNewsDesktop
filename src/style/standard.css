@@ -3,6 +3,10 @@
     -fx-border-color: #1A2739;
 }
 
+/*
+ * Grid style start
+ */
+
 #news-grid {
     -fx-background-color: #f5f9fa;
     -fx-border-color: #3e6f9b;
@@ -29,6 +33,14 @@
     -fx-background-color: #1A2739;
 }
 
+/*
+ * Grid style end
+ */
+
+/*
+ * Scroll style start
+ */
+
 .scroll-bar:vertical {
     -fx-background-color: transparent;
     -fx-border-radius: 30;
@@ -51,9 +63,12 @@
     -fx-background-radius: 30;
 }
 
+/*
+ * Scroll style end
+ */
 
 /*
- * Button settings start
+ * Button style start
  */
 
 .button {
@@ -71,10 +86,10 @@
     -fx-text-fill: #ECF0F1;
 }
 
-.button:pressed {
-    -fx-background-color: white;
+.button:pressed,
+.button:disabled, .button:disabled > * {
+    -fx-background-color: #ECF0F1;
     -fx-text-fill: #2b2b2b;
-    -fx-border-color: white;
 }
 
 #back {
@@ -95,12 +110,32 @@
     -fx-background-color: #ECF0F1;
 }
 
+
+#open-browser {
+    -fx-background-radius: 30;
+    -fx-border-radius: 30;
+    -fx-background-color: transparent;
+    -fx-border-width: 2;
+    -fx-border-color: #2B4666;
+    -fx-text-fill: #2b2b2b;
+}
+
+#open-browser:hover {
+    -fx-background-color: #2B4666;
+    -fx-text-fill: white;
+}
+
+#open-browser:pressed {
+    -fx-background-color: white;
+}
+
+
 /*
- * Button settings end
+ * Button style end
  */
 
 /*
- * Label settings start
+ * Label style start
  */
 
 .label {
@@ -115,14 +150,16 @@
 }
 
 #title {
-    -fx-font-size: 25;
+    -fx-font-size: 26;
+    -fx-font-weight: bold;
     -fx-opacity: 0.8;
     -fx-wrap-text: true;
 
 }
 
 #description {
-    -fx-font-size: 15;
+    -fx-font-size: 17;
+    -fx-font-weight: bold;
     -fx-opacity: 0.9;
     -fx-wrap-text: true;
 }
@@ -132,10 +169,5 @@
 }
 
 /*
- * Label settings end
+ * Label style end
  */
-
-#stack-pane {
-    -fx-border-radius: 50;
-    -fx-background-radius: 50;
-}

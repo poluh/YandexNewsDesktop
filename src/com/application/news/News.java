@@ -1,7 +1,6 @@
 package com.application.news;
 
-import com.application.brain.data.Citation;
-import javafx.scene.image.Image;
+import com.application.brain.data.auxiliaryClasses.Citation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +30,18 @@ public class News {
     }
 
     public News() {
+    }
+
+    public static List<News> divideAndRule(List<News> newsList) {
+        List<News> newsImg = new ArrayList<>();
+        List<News> newsNotImg = new ArrayList<>();
+        for (News news : newsList) {
+            if (news.getImgO().isEmpty()) {
+                newsNotImg.add(news);
+            } else newsImg.add(news);
+        }
+        newsImg.addAll(newsNotImg);
+        return newsImg;
     }
 
     public String getTitle() {
@@ -69,6 +80,10 @@ public class News {
         return img;
     }
 
+    public void setImg(String imgO) {
+        this.imgO = imgO;
+    }
+
     public void setImg(List<String> img) {
         this.img = img;
     }
@@ -84,23 +99,6 @@ public class News {
     public void setLink(String link) {
         this.link = link;
     }
-
-    public void setImg(String imgO) {
-        this.imgO = imgO;
-    }
-
-    public static List<News> divideAndRule(List<News> newsList) {
-        List<News> newsImg = new ArrayList<>();
-        List<News> newsNotImg = new ArrayList<>();
-        for (News news : newsList) {
-            if (news.getImgO().isEmpty()) {
-                newsNotImg.add(news);
-            } else newsImg.add(news);
-        }
-        newsImg.addAll(newsNotImg);
-        return newsImg;
-    }
-
 
     @Override
     public String toString() {

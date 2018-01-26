@@ -1,4 +1,4 @@
-package com.application.brain.data;
+package com.application.brain.data.auxiliaryClasses;
 
 public class Citation {
     private String text, image, info;
