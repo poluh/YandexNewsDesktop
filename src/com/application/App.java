@@ -12,6 +12,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
@@ -37,7 +38,7 @@ public class App extends Application {
     private static List<Node> cacheBackWindow = new ArrayList<>();
     private static Map<String, Node> cacheCategoriesWindow = new HashMap<>();
     private static final GridPane mainGrid = new GridPane();
-    private static Map<String, News> allNews = new HashMap<>();
+    public static List<News> allNews = new ArrayList<>();
 
     private static GridPane createGrid() {
         GridPane gridPane = new GridPane();
@@ -48,14 +49,52 @@ public class App extends Application {
         return gridPane;
     }
 
+    private static HBox createHBox(Node node, Pos pos) {
+        HBox hBox = new HBox();
+        hBox.getChildren().add(node);
+        hBox.setAlignment(pos);
+        hBox.setMinSize(400, 50);
+        hBox.setPadding(new Insets(10));
+        return hBox;
+    }
+
+    private static void createGridPaneOnVBox(GridPane gridPane) {
+        ScrollPane scrollPane = new ScrollPane(gridPane);
+        scrollPane.setMinSize(1090, 650);
+        scrollPane.setMaxSize(1090, 650);
+        VBox vBox = new VBox();
+        vBox.getChildren().add(scrollPane);
+        cacheBackWindow.add(vBox);
+        App.mainGrid.add(vBox, 1, 1);
+    }
+
+    private static void cachingCategories(List<Category> categories) {
+        for (Category category : categories) {
+            try {
+                GridPane cacheGrid = createGrid();
+                createCategoriesWindow(category.getLink(), cacheGrid);
+                cacheCategoriesWindow.put(category.getLink(), cacheGrid.getChildren().get(0));
+            } catch (Exception e) {
+                throw new IllegalArgumentException(e.getMessage());
+            }
+        }
+    }
+
+    // Ease created horizontal box for the text object
+    private static HBox createNewsComponent(Label label, boolean isMainNews) {
+        HBox hBox = new HBox();
+        hBox.setMaxWidth(isMainNews ? 550 : 270);
+        hBox.getChildren().add(label);
+        if (Objects.equals(label.getId(), "date")) hBox.setAlignment(Pos.BOTTOM_LEFT);
+        return hBox;
+    }
+
     private static Node createElementMainWindow() throws Exception {
 
-        /*
-         * TODO APPEND TEXT FIELD FOR SEARCH NEWS
-         */
 
-        // Pane for categories
+        // Pane's for the categories and search, the toBack
         GridPane leftGrid = new GridPane();
+        GridPane upGrid = new GridPane();
 
         leftGrid.getStyleClass().add("left-grid");
         leftGrid.setMinHeight(800);
@@ -63,24 +102,18 @@ public class App extends Application {
         Label categoryLabel = new Label("Категории");
         categoryLabel.setId("categories");
 
-        // Top panel for label "categories" and button toBack
-        HBox categoryBox = new HBox();
-        categoryBox.setAlignment(Pos.CENTER_LEFT);
-        categoryBox.setPadding(new Insets(25));
-        categoryBox.getChildren().add(categoryLabel);
-        categoryBox.setMinSize(400, 40);
-
-        HBox backBox = new HBox();
-        backBox.setAlignment(Pos.CENTER_RIGHT);
-        backBox.setPadding(new Insets(25));
         toBack.setVisible(false);
         toBack.setId("back");
-        backBox.getChildren().add(toBack);
-        backBox.setMinSize(400, 40);
         toBack(toBack, mainGrid, cacheBackWindow);
 
-        mainGrid.add(categoryBox, 0, 0, 2, 1);
-        mainGrid.add(backBox, 1, 0, 2, 1);
+        TextField searchNews = new TextField();
+        searchNews.setMinWidth(400);
+        searchForNews(searchNews);
+
+        upGrid.add(createHBox(categoryLabel, Pos.CENTER_LEFT), 0, 0);
+        upGrid.add(createHBox(searchNews, Pos.CENTER), 1, 0);
+        upGrid.add(createHBox(toBack, Pos.CENTER_RIGHT), 2, 0);
+        mainGrid.add(upGrid, 0, 0, 4, 1);
 
         // Append categories on left-pane
         int i = 0;
@@ -116,7 +149,7 @@ public class App extends Application {
             for (News news : interestingNews) {
                 GridPane gridPane = createGrid();
                 gridPane.setId("news-grid");
-                openNews(gridPane, news.getLink(), mainGrid);
+                openNews(gridPane, news.getLink());
 
                 Label title = new Label(news.getTitle());
                 title.setId("description");
@@ -136,11 +169,54 @@ public class App extends Application {
 
     }
 
+    public static void createFoundNewsWindow(List<News> newsList) {
+
+        try {
+            mainGrid.getChildren().remove(2);
+            toBack.setVisible(true);
+        } catch (Exception ignored) {
+        }
+
+        GridPane gridPane = createGrid();
+
+        int i = 0, j = 0;
+        for (News news : newsList) {
+            GridPane newsGrid = createGrid();
+            newsGrid.setId("news-grid");
+
+            Label title = new Label(news.getTitle());
+            title.setId("title");
+
+            Label date = new Label(news.getDate());
+            date.setId("date");
+
+            ImageView image = !news.getImgO().isEmpty() ? new ImageView(new Image(news.getImgO(),
+                    256, 256, true, false)) : null;
+
+            try {
+            newsGrid.add(image, 0, 0);
+            } catch (NullPointerException ignored) {
+            }
+            newsGrid.add(createNewsComponent(title, false), 0,   1);
+            newsGrid.add(createNewsComponent(date, false), 0, 2);
+
+            gridPane.add(newsGrid, i, j);
+
+            i++;
+            if (i == 3) {
+                i = 0;
+                j += 3;
+            }
+        }
+
+        createGridPaneOnVBox(gridPane);
+    }
+
     public static void createNewsWindow(News news) throws IOException {
 
         // Del before windows and show button toBack
         toBack.setVisible(true);
-        App.mainGrid.getChildren().remove(3);
+        App.mainGrid.getChildren().remove(2);
 
         GridPane gridPane = createGrid();
         createInterestingNews(news.getLink(), gridPane, App.mainGrid);
@@ -191,31 +267,14 @@ public class App extends Application {
         boxODBBtn.setAlignment(Pos.TOP_CENTER);
         gridPane.add(boxODBBtn, 0, 5, 3, 1);
 
-        // Append all on Scroll on vertical box
-        ScrollPane scrollPane = new ScrollPane(gridPane);
-        scrollPane.setMinSize(1090, 660);
-        scrollPane.setMaxSize(1090, 660);
-        VBox vBox = new VBox();
-        vBox.getChildren().add(scrollPane);
-        App.mainGrid.add(vBox, 1, 1);
-
-        cacheBackWindow.add(vBox);
-    }
-
-    // Ease created horizontal box for the text object
-    private static HBox createNewsComponent(Label label, boolean isMainNews) {
-        HBox hBox = new HBox();
-        hBox.setMaxWidth(isMainNews ? 550 : 270);
-        hBox.getChildren().add(label);
-        if (Objects.equals(label.getId(), "date")) hBox.setAlignment(Pos.BOTTOM_LEFT);
-        return hBox;
+        createGridPaneOnVBox(gridPane);
     }
 
     // Method for append the category and create her window
     public static void createCategoriesWindow(String link, GridPane mainGrid) throws Exception {
 
         try {
-            mainGrid.getChildren().remove(3);
+            mainGrid.getChildren().remove(2);
         } catch (Exception ignored) {
         }
 
@@ -227,7 +286,7 @@ public class App extends Application {
             int i = 0, j = 0;
             boolean isMainNews = true;
             for (News news : News.divideAndRule(getListNews(link))) {
-                allNews.put(news.getTitle(), news);
+                allNews.add(news);
 
                 Label title = new Label(news.getTitle());
                 title.setId("title");
@@ -238,7 +297,7 @@ public class App extends Application {
                 if (isMainNews) {
                     GridPane miniGrid = createGrid();
                     miniGrid.setId("news-grid");
-                    openNews(miniGrid, news.getLink(), mainGrid);
+                    openNews(miniGrid, news.getLink());
 
                     miniGrid.add(image, i, j, 1, 3);
 
@@ -259,7 +318,7 @@ public class App extends Application {
                     miniGrid.add(createNewsComponent(title, false), 0, 1);
                     miniGrid.add(createNewsComponent(date, false), 0, 2);
                     miniGrid.setId("news-grid");
-                    openNews(miniGrid, news.getLink(), mainGrid);
+                    openNews(miniGrid, news.getLink());
 
                     gridPane.add(miniGrid, i, j);
                     i++;
@@ -271,15 +330,8 @@ public class App extends Application {
                 }
 
             }
-            ScrollPane scrollPane = new ScrollPane(gridPane);
-            scrollPane.setMaxSize(1090, 660);
-            scrollPane.setMinSize(1090, 660);
-            VBox vBox = new VBox();
-            vBox.getChildren().add(scrollPane);
-            mainGrid.add(vBox, 1, 1);
-
             cacheBackWindow.clear();
-            cacheBackWindow.add(vBox);
+            createGridPaneOnVBox(gridPane);
         }
     }
 
@@ -307,19 +359,6 @@ public class App extends Application {
         } catch (Exception ignored) {
         }
 
-    }
-
-
-    private static void cachingCategories(List<Category> categories) {
-        for (Category category : categories) {
-            try {
-                GridPane cacheGrid = createGrid();
-                createCategoriesWindow(category.getLink(), cacheGrid);
-                cacheCategoriesWindow.put(category.getLink(), cacheGrid.getChildren().get(0));
-            } catch (Exception e) {
-                throw new IllegalArgumentException(e.getMessage());
-            }
-        }
     }
 
     public static void main(String[] args) {

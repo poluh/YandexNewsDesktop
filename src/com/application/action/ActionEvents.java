@@ -3,14 +3,18 @@ package com.application.action;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
 
 import java.io.IOException;
 import java.util.List;
 
 import static com.application.App.createCategoriesWindow;
+import static com.application.App.createFoundNewsWindow;
 import static com.application.App.createNewsWindow;
 import static com.application.brain.data.GetPages.getNews;
+import static com.application.brain.data.SearchForNews.search;
 
 public class ActionEvents {
 
@@ -35,10 +39,10 @@ public class ActionEvents {
         });
     }
 
-    public static void openNews(GridPane gridPane, String link, GridPane mainGrid) {
+    public static void openNews(GridPane gridPane, String link) {
         gridPane.setOnMouseClicked(event -> {
             try {
-                createNewsWindow(getNews(link), mainGrid);
+                createNewsWindow(getNews(link));
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (Exception e) {
@@ -47,17 +51,22 @@ public class ActionEvents {
         });
     }
 
-    public static void toBack(Button button, GridPane mainGrid, List<Node> node) {
+    public static void toBack(Button button, GridPane mainGrid, List<Node> nodes) {
         button.setOnAction(event -> {
-            mainGrid.getChildren().remove(node.get(node.size() - 1));
-            node.remove(node.size() - 1);
-            if (node.size() == 1) {
-                mainGrid.add(node.get(node.size() - 1), 1, 1);
+            mainGrid.getChildren().remove(nodes.get(nodes.size() - 1));
+            nodes.remove(nodes.size() - 1);
+            if (nodes.size() == 1) {
+                mainGrid.add(nodes.get(nodes.size() - 1), 1, 1);
                 button.setVisible(false);
             } else {
                 try {
-                    mainGrid.add(node.get(node.size() - 1), 1, 1);
-                } catch (IllegalArgumentException ignored) {
+                    mainGrid.add(nodes.get(nodes.size() - 1), 1, 1);
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    for (Node node : nodes) {
+                        mainGrid.getChildren().remove(node);
+                    }
+                    nodes.clear();
+                    button.setVisible(false);
                 }
             }
         });
@@ -93,5 +102,13 @@ public class ActionEvents {
         });
     }
 
+
+    public static void searchForNews(TextField textField) {
+        textField.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                createFoundNewsWindow(search(textField.getText()));
+            }
+        });
+    }
 
 }

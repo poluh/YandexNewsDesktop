@@ -144,7 +144,7 @@
 }
 
 #categories {
-    -fx-font-size: 20;
+    -fx-font-size: 23;
     -fx-opacity: 0.9;
     -fx-text-fill: #ECF0F1;
 }
@@ -171,3 +171,14 @@
 /*
  * Label style end
  */
+.text-field {
+    -fx-background-color: transparent;
+    -fx-background-radius: 30;
+    -fx-border-color: #ECF0F1;
+    -fx-border-radius: 30;
+    -fx-border-width: 2;
+    -fx-text-fill: #ECF0F1;
+    -fx-font: 16 "Helvetica";
+    -fx-font-weight: bold;
+}
+
