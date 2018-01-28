@@ -35,6 +35,7 @@ public class App extends Application {
     private static final String MAIN_PAGE = "https://news.yandex.ru/";
     private static Stage pPrimaryStage = null;
     private static Button toBack = new Button("Назад");
+    private static Button toCategory = new Button("< Туды)0)");
     private static List<Node> cacheBackWindow = new ArrayList<>();
     private static Map<String, Node> cacheCategoriesWindow = new HashMap<>();
     private static final GridPane mainGrid = new GridPane();
@@ -53,21 +54,23 @@ public class App extends Application {
         HBox hBox = new HBox();
         hBox.getChildren().add(node);
         hBox.setAlignment(pos);
-        hBox.setMinSize(400, 50);
+        hBox.setMinSize(200, 50);
         hBox.setPadding(new Insets(10));
         return hBox;
     }
 
-    private static void createGridPaneOnVBox(GridPane gridPane) {
+    private static void createGridPaneOnVBox(GridPane gridPane, String link) {
         ScrollPane scrollPane = new ScrollPane(gridPane);
         scrollPane.setMinSize(1090, 650);
         scrollPane.setMaxSize(1090, 650);
         VBox vBox = new VBox();
         vBox.getChildren().add(scrollPane);
         cacheBackWindow.add(vBox);
+        if (!Objects.equals(link, "")) cacheCategoriesWindow.put(link, vBox);
         App.mainGrid.add(vBox, 1, 1);
     }
 
+    // TODO
     private static void cachingCategories(List<Category> categories) {
         for (Category category : categories) {
             try {
@@ -75,7 +78,7 @@ public class App extends Application {
                 createCategoriesWindow(category.getLink(), cacheGrid);
                 cacheCategoriesWindow.put(category.getLink(), cacheGrid.getChildren().get(0));
             } catch (Exception e) {
-                throw new IllegalArgumentException(e.getMessage());
+                System.out.println(e.getClass() + " " + e.getMessage());
             }
         }
     }
@@ -89,8 +92,18 @@ public class App extends Application {
         return hBox;
     }
 
-    private static Node createElementMainWindow() throws Exception {
+    private static GridPane newsToGrid(Node... nodes) {
+        GridPane gridPane = createGrid();
+        int i = 0;
+        for (Node node : nodes) {
+            gridPane.add(node, 0, i);
+            i++;
+        }
+        gridPane.setId("news-grid");
+        return gridPane;
+    }
 
+    private static Node createElementMainWindow() throws Exception {
 
         // Pane's for the categories and search, the toBack
         GridPane leftGrid = new GridPane();
@@ -106,13 +119,18 @@ public class App extends Application {
         toBack.setId("back");
         toBack(toBack, mainGrid, cacheBackWindow);
 
+        toCategory.setVisible(false);
+        toCategory.setId("back");
+        toCategory(toCategory, mainGrid, cacheBackWindow);
+
         TextField searchNews = new TextField();
-        searchNews.setMinWidth(400);
+        searchNews.setMinWidth(500);
         searchForNews(searchNews);
 
         upGrid.add(createHBox(categoryLabel, Pos.CENTER_LEFT), 0, 0);
-        upGrid.add(createHBox(searchNews, Pos.CENTER), 1, 0);
-        upGrid.add(createHBox(toBack, Pos.CENTER_RIGHT), 2, 0);
+        upGrid.add(createHBox(toCategory, Pos.CENTER_LEFT), 1, 0);
+        upGrid.add(createHBox(searchNews, Pos.CENTER), 2, 0);
+        upGrid.add(createHBox(toBack, Pos.CENTER_RIGHT), 3, 0);
         mainGrid.add(upGrid, 0, 0, 4, 1);
 
         // Append categories on left-pane
@@ -133,7 +151,7 @@ public class App extends Application {
         return mainGrid;
     }
 
-    private static void createInterestingNews(String link, GridPane defaultGrid, GridPane fakeGrid) throws IOException {
+    private static void createInterestingNews(String link, GridPane defaultGrid) throws IOException {
         List<News> interestingNews = getInterestingNews(link);
 
         if (!interestingNews.isEmpty()) {
@@ -147,24 +165,22 @@ public class App extends Application {
             // Append interesting news on pane
             int i = 1;
             for (News news : interestingNews) {
-                GridPane gridPane = createGrid();
-                gridPane.setId("news-grid");
-                openNews(gridPane, news.getLink());
 
                 Label title = new Label(news.getTitle());
                 title.setId("description");
                 Label date = new Label(news.getDate());
                 date.setId("date");
+                GridPane gridPane = newsToGrid(createNewsComponent(title, false),
+                        createNewsComponent(date, false));
+                openNews(gridPane, news.getLink());
 
                 // Conclude the news in the pane to apply style
-                gridPane.add(createNewsComponent(title, false), 0, 0);
-                gridPane.add(createNewsComponent(date, false), 0, 1);
                 interestingPane.add(gridPane, 0, i);
                 i++;
             }
 
             // Append block-news on the base pane
-            defaultGrid.add(interestingPane, 4, 0, 1, 20);
+            defaultGrid.add(interestingPane, 4, 0, 1, interestingNews.size());
         }
 
     }
@@ -181,8 +197,6 @@ public class App extends Application {
 
         int i = 0, j = 0;
         for (News news : newsList) {
-            GridPane newsGrid = createGrid();
-            newsGrid.setId("news-grid");
 
             Label title = new Label(news.getTitle());
             title.setId("title");
@@ -193,13 +207,15 @@ public class App extends Application {
             ImageView image = !news.getImgO().isEmpty() ? new ImageView(new Image(news.getImgO(),
                     256, 256, true, false)) : null;
 
+            GridPane newsGrid;
             try {
-            newsGrid.add(image, 0, 0);
+                newsGrid = newsToGrid(image, createNewsComponent(title, false),
+                        createNewsComponent(date, false));
             } catch (NullPointerException ignored) {
+                newsGrid = newsToGrid(createNewsComponent(title, false),
+                        createNewsComponent(date, false));
             }
-            newsGrid.add(createNewsComponent(title, false), 0,   1);
-            newsGrid.add(createNewsComponent(date, false), 0, 2);
-
+            openNews(newsGrid, news.getLink());
             gridPane.add(newsGrid, i, j);
 
             i++;
@@ -208,18 +224,18 @@ public class App extends Application {
                 j += 3;
             }
         }
-
-        createGridPaneOnVBox(gridPane);
+        createGridPaneOnVBox(gridPane, "");
     }
 
     public static void createNewsWindow(News news) throws IOException {
 
         // Del before windows and show button toBack
         toBack.setVisible(true);
+        toCategory.setVisible(true);
         App.mainGrid.getChildren().remove(2);
 
         GridPane gridPane = createGrid();
-        createInterestingNews(news.getLink(), gridPane, App.mainGrid);
+        createInterestingNews(news.getLink(), gridPane);
         List<String> imageRef = news.getImg();
         Label title = new Label(news.getTitle());
         title.setId("title");
@@ -244,7 +260,6 @@ public class App extends Application {
             Label info = new Label(citation.getInfo());
             info.setId("date");
 
-            // TODO Round the image
             Circle shapeImage = new Circle(50);
             Image image = new Image(citation.getImage());
             shapeImage.setFill(new ImagePattern(image));
@@ -267,7 +282,7 @@ public class App extends Application {
         boxODBBtn.setAlignment(Pos.TOP_CENTER);
         gridPane.add(boxODBBtn, 0, 5, 3, 1);
 
-        createGridPaneOnVBox(gridPane);
+        createGridPaneOnVBox(gridPane, "");
     }
 
     // Method for append the category and create her window
@@ -275,6 +290,7 @@ public class App extends Application {
 
         try {
             mainGrid.getChildren().remove(2);
+            cacheBackWindow.clear();
         } catch (Exception ignored) {
         }
 
@@ -313,52 +329,36 @@ public class App extends Application {
 
                     j += 3;
                 } else {
-                    GridPane miniGrid = createGrid();
-                    if (image != null) miniGrid.add(image, 0, 0);
-                    miniGrid.add(createNewsComponent(title, false), 0, 1);
-                    miniGrid.add(createNewsComponent(date, false), 0, 2);
-                    miniGrid.setId("news-grid");
-                    openNews(miniGrid, news.getLink());
 
-                    gridPane.add(miniGrid, i, j);
+                    GridPane newsGrid;
+                    try {
+                        newsGrid = newsToGrid(image, createNewsComponent(title, false),
+                                createNewsComponent(date, true));
+                    } catch (NullPointerException e) {
+                        newsGrid = newsToGrid(createNewsComponent(title, false),
+                                createNewsComponent(date, true));
+                    }
+                    openNews(newsGrid, news.getLink());
+
+                    gridPane.add(newsGrid, i, j);
                     i++;
                     if (i == 3) {
                         i = 0;
                         j += 3;
                     }
-
                 }
-
             }
-            cacheBackWindow.clear();
-            createGridPaneOnVBox(gridPane);
+            createGridPaneOnVBox(gridPane, link);
         }
     }
 
-    private static void createMainWindow() {
+    private static void createMainWindow() throws Exception {
 
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    cachingCategories(getListCategories(MAIN_PAGE));
-                } catch (Exception ignored) {
-                }
-            }
-        });
+        Scene scene = new Scene((Parent) createElementMainWindow(), 1230, 700);
+        scene.getStylesheets().add(PATH_TO_STYLE);
 
-        thread.start();
-
-        try {
-            Scene scene = null;
-            scene = new Scene((Parent) createElementMainWindow(), 1230, 700);
-            scene.getStylesheets().add(PATH_TO_STYLE);
-
-            pPrimaryStage.setScene(scene);
-            pPrimaryStage.show();
-        } catch (Exception ignored) {
-        }
-
+        pPrimaryStage.setScene(scene);
+        pPrimaryStage.show();
     }
 
     public static void main(String[] args) {

@@ -4,6 +4,7 @@ import com.application.brain.data.auxiliaryClasses.Citation;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class News {
 
@@ -35,10 +36,14 @@ public class News {
     public static List<News> divideAndRule(List<News> newsList) {
         List<News> newsImg = new ArrayList<>();
         List<News> newsNotImg = new ArrayList<>();
+        List<String> titles = new ArrayList<>();
         for (News news : newsList) {
-            if (news.getImgO().isEmpty()) {
-                newsNotImg.add(news);
-            } else newsImg.add(news);
+            if (!titles.contains(news.getTitle())) {
+                if (news.getImgO().isEmpty()) {
+                    newsNotImg.add(news);
+                } else newsImg.add(news);
+                titles.add(news.getTitle());
+            }
         }
         newsImg.addAll(newsNotImg);
         return newsImg;
@@ -100,16 +105,20 @@ public class News {
         this.link = link;
     }
 
-    @Override
-    public String toString() {
-        return title + "\n" + description + "\n" + agency + " : " + date;
-    }
-
     public Citation getCitation() {
         return citation;
     }
 
     public void setCitation(Citation citation) {
         this.citation = citation;
+    }
+
+    public int hashCode() {
+        return title.hashCode() & date.hashCode() & 1234567890;
+    }
+
+    @Override
+    public String toString() {
+        return title + "\n" + description + "\n" + agency + " : " + date;
     }
 }

@@ -10,18 +10,19 @@ import javafx.scene.layout.GridPane;
 import java.io.IOException;
 import java.util.List;
 
-import static com.application.App.createCategoriesWindow;
-import static com.application.App.createFoundNewsWindow;
-import static com.application.App.createNewsWindow;
+import static com.application.App.*;
 import static com.application.brain.data.GetPages.getNews;
 import static com.application.brain.data.SearchForNews.search;
 
 public class ActionEvents {
 
+    private static String categoryLink = "";
+
     public static void categoriesButton(Button mainButton, GridPane grid, GridPane leftGrid) {
         mainButton.setOnAction(event -> {
             try {
                 createCategoriesWindow(mainButton.getId(), grid);
+                categoryLink = mainButton.getId();
                 mainButton.setDisable(true);
                 for (Node node : leftGrid.getChildren()) {
                     if (node != mainButton) {
@@ -68,6 +69,19 @@ public class ActionEvents {
                     nodes.clear();
                     button.setVisible(false);
                 }
+            }
+        });
+    }
+
+    public static void toCategory(Button button, GridPane mainGrid, List<Node> nodes) {
+        button.setOnAction(event -> {
+            try {
+                mainGrid.getChildren().remove(nodes.get(nodes.size() - 1));
+                createCategoriesWindow(categoryLink, mainGrid);
+                button.setVisible(false);
+                nodes.clear();
+            } catch (Exception e) {
+                throw new IllegalArgumentException(e.getMessage());
             }
         });
     }
