@@ -4,6 +4,7 @@ import com.application.brain.data.auxiliaryClasses.Category;
 import com.application.brain.data.auxiliaryClasses.Citation;
 import com.application.news.News;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -37,7 +38,7 @@ public class App extends Application {
     private static Button toBack = new Button("Назад");
     private static Button toCategory = new Button("< Туды)0)");
     private static List<Node> cacheBackWindow = new ArrayList<>();
-    private static Map<String, Node> cacheCategoriesWindow = new HashMap<>();
+    private static Map<String, List<News>> cacheCategories = new HashMap<>();
     private static final GridPane mainGrid = new GridPane();
     public static List<News> allNews = new ArrayList<>();
 
@@ -59,14 +60,13 @@ public class App extends Application {
         return hBox;
     }
 
-    private static void createGridPaneOnVBox(GridPane gridPane, String link) {
+    private static void createGridPaneOnVBox(GridPane gridPane) {
         ScrollPane scrollPane = new ScrollPane(gridPane);
         scrollPane.setMinSize(1090, 650);
         scrollPane.setMaxSize(1090, 650);
         VBox vBox = new VBox();
         vBox.getChildren().add(scrollPane);
         cacheBackWindow.add(vBox);
-        if (!Objects.equals(link, "")) cacheCategoriesWindow.put(link, vBox);
         App.mainGrid.add(vBox, 1, 1);
     }
 
@@ -74,14 +74,13 @@ public class App extends Application {
     private static void cachingCategories(List<Category> categories) {
         for (Category category : categories) {
             try {
-                GridPane cacheGrid = createGrid();
-                createCategoriesWindow(category.getLink(), cacheGrid);
-                cacheCategoriesWindow.put(category.getLink(), cacheGrid.getChildren().get(0));
+                cacheCategories.put(category.getLink(), getListNews(category.getLink()));
             } catch (Exception e) {
-                System.out.println(e.getClass() + " " + e.getMessage());
+                e.printStackTrace();
             }
         }
-    }
+
+}
 
     // Ease created horizontal box for the text object
     private static HBox createNewsComponent(Label label, boolean isMainNews) {
@@ -103,51 +102,59 @@ public class App extends Application {
         return gridPane;
     }
 
-    private static Node createElementMainWindow() throws Exception {
+    private static Node createElementMainWindow() {
 
-        // Pane's for the categories and search, the toBack
-        GridPane leftGrid = new GridPane();
-        GridPane upGrid = new GridPane();
+        Platform.runLater(() -> {
 
-        leftGrid.getStyleClass().add("left-grid");
-        leftGrid.setMinHeight(800);
+            // Pane's for the categories and search, the toBack
+            GridPane leftGrid = new GridPane();
+            GridPane upGrid = new GridPane();
 
-        Label categoryLabel = new Label("Категории");
-        categoryLabel.setId("categories");
+            leftGrid.getStyleClass().add("left-grid");
+            leftGrid.setMinHeight(800);
 
-        toBack.setVisible(false);
-        toBack.setId("back");
-        toBack(toBack, mainGrid, cacheBackWindow);
+            Label categoryLabel = new Label("Категории");
+            categoryLabel.setId("categories");
 
-        toCategory.setVisible(false);
-        toCategory.setId("back");
-        toCategory(toCategory, mainGrid, cacheBackWindow);
+            toBack.setVisible(false);
+            toBack.setId("back");
+            toBack(toBack, mainGrid, cacheBackWindow);
 
-        TextField searchNews = new TextField();
-        searchNews.setMinWidth(500);
-        searchForNews(searchNews);
+            toCategory.setVisible(false);
+            toCategory.setId("back");
+            toCategory(toCategory, mainGrid, cacheBackWindow, toBack);
 
-        upGrid.add(createHBox(categoryLabel, Pos.CENTER_LEFT), 0, 0);
-        upGrid.add(createHBox(toCategory, Pos.CENTER_LEFT), 1, 0);
-        upGrid.add(createHBox(searchNews, Pos.CENTER), 2, 0);
-        upGrid.add(createHBox(toBack, Pos.CENTER_RIGHT), 3, 0);
-        mainGrid.add(upGrid, 0, 0, 4, 1);
+            TextField searchNews = new TextField();
+            searchNews.setMinWidth(500);
+            searchForNews(searchNews);
+            searchNews.setFocusTraversable(false);
+            searchNews.requestFocus();
 
-        // Append categories on left-pane
-        int i = 0;
-        for (Category category : getListCategories(MAIN_PAGE)) {
+            upGrid.add(createHBox(categoryLabel, Pos.CENTER_LEFT), 0, 0);
+            upGrid.add(createHBox(toCategory, Pos.CENTER_LEFT), 1, 0);
+            upGrid.add(createHBox(searchNews, Pos.CENTER), 2, 0);
+            upGrid.add(createHBox(toBack, Pos.CENTER_RIGHT), 3, 0);
+            mainGrid.add(upGrid, 0, 0, 4, 1);
 
-            Button categoryButton = new Button(category.getName());
-            categoryButton.setMinSize(140, 50);
-            categoryButton.setId(category.getLink());
-            categoriesButton(categoryButton, mainGrid, leftGrid);
+            // Append categories on left-pane
+            int i = 0;
+            try {
+                for (Category category : getListCategories(MAIN_PAGE)) {
 
-            leftGrid.add(categoryButton, 0, i);
-            i++;
-        }
+                    Button categoryButton = new Button(category.getName());
+                    categoryButton.setMinSize(140, 50);
+                    categoryButton.setId(category.getLink());
+                    categoriesButton(categoryButton, mainGrid, leftGrid);
 
-        mainGrid.add(leftGrid, 0, 1);
+                    leftGrid.add(categoryButton, 0, i);
+                    i++;
+                }
+            } catch (Exception ignored) {
+            }
 
+            mainGrid.add(leftGrid, 0, 1);
+
+        });
         return mainGrid;
     }
 
@@ -180,7 +187,7 @@ public class App extends Application {
             }
 
             // Append block-news on the base pane
-            defaultGrid.add(interestingPane, 4, 0, 1, interestingNews.size());
+            defaultGrid.add(interestingPane, 4, 0, 1, interestingNews.size() + 4);
         }
 
     }
@@ -224,7 +231,7 @@ public class App extends Application {
                 j += 3;
             }
         }
-        createGridPaneOnVBox(gridPane, "");
+        createGridPaneOnVBox(gridPane);
     }
 
     public static void createNewsWindow(News news) throws IOException {
@@ -282,7 +289,7 @@ public class App extends Application {
         boxODBBtn.setAlignment(Pos.TOP_CENTER);
         gridPane.add(boxODBBtn, 0, 5, 3, 1);
 
-        createGridPaneOnVBox(gridPane, "");
+        createGridPaneOnVBox(gridPane);
     }
 
     // Method for append the category and create her window
@@ -294,75 +301,72 @@ public class App extends Application {
         } catch (Exception ignored) {
         }
 
-        if (cacheCategoriesWindow.keySet().contains(link)) {
-            mainGrid.add(cacheCategoriesWindow.get(link), 1, 1);
-        } else {
-            GridPane gridPane = createGrid();
 
-            int i = 0, j = 0;
-            boolean isMainNews = true;
-            for (News news : News.divideAndRule(getListNews(link))) {
-                allNews.add(news);
+        GridPane gridPane = createGrid();
 
-                Label title = new Label(news.getTitle());
-                title.setId("title");
-                Label date = new Label(news.getDate());
-                date.setId("date");
-                ImageView image = !news.getImgO().isEmpty() ? new ImageView(new Image(news.getImgO())) : null;
+        int i = 0, j = 0;
+        boolean isMainNews = true;
+        List<News> newsList = cacheCategories.containsKey(link) ? cacheCategories.get(link) : News.divideAndRule(getListNews(link));
 
-                if (isMainNews) {
-                    GridPane miniGrid = createGrid();
-                    miniGrid.setId("news-grid");
-                    openNews(miniGrid, news.getLink());
+        for (News news : newsList) {
+            allNews.add(news);
 
-                    miniGrid.add(image, i, j, 1, 3);
+            Label title = new Label(news.getTitle());
+            title.setId("title");
+            Label date = new Label(news.getDate());
+            date.setId("date");
+            ImageView image = !news.getImgO().isEmpty() ? new ImageView(new Image(news.getImgO())) : null;
 
-                    Label description = new Label(news.getDescription());
-                    description.setId("description");
+            if (isMainNews) {
+                GridPane miniGrid = createGrid();
+                miniGrid.setId("news-grid");
+                openNews(miniGrid, news.getLink());
 
-                    miniGrid.add(createNewsComponent(title, true), i + 2, j);
-                    miniGrid.add(createNewsComponent(description, true), i + 2, j + 1);
-                    miniGrid.add(createNewsComponent(date, true), i + 2, j + 2);
+                miniGrid.add(image, i, j, 1, 3);
 
-                    gridPane.add(miniGrid, 0, 0, 3, 1);
-                    isMainNews = false;
+                Label description = new Label(news.getDescription());
+                description.setId("description");
 
+                miniGrid.add(createNewsComponent(title, true), i + 2, j);
+                miniGrid.add(createNewsComponent(description, true), i + 2, j + 1);
+                miniGrid.add(createNewsComponent(date, true), i + 2, j + 2);
+
+                gridPane.add(miniGrid, 0, 0, 3, 1);
+                isMainNews = false;
+
+                j += 3;
+            } else {
+
+                GridPane newsGrid;
+                try {
+                    newsGrid = newsToGrid(image, createNewsComponent(title, false),
+                            createNewsComponent(date, true));
+                } catch (NullPointerException e) {
+                    newsGrid = newsToGrid(createNewsComponent(title, false),
+                            createNewsComponent(date, true));
+                }
+                openNews(newsGrid, news.getLink());
+
+                gridPane.add(newsGrid, i, j);
+                i++;
+                if (i == 3) {
+                    i = 0;
                     j += 3;
-                } else {
-
-                    GridPane newsGrid;
-                    try {
-                        newsGrid = newsToGrid(image, createNewsComponent(title, false),
-                                createNewsComponent(date, true));
-                    } catch (NullPointerException e) {
-                        newsGrid = newsToGrid(createNewsComponent(title, false),
-                                createNewsComponent(date, true));
-                    }
-                    openNews(newsGrid, news.getLink());
-
-                    gridPane.add(newsGrid, i, j);
-                    i++;
-                    if (i == 3) {
-                        i = 0;
-                        j += 3;
-                    }
                 }
             }
-            createGridPaneOnVBox(gridPane, link);
         }
+        createGridPaneOnVBox(gridPane);
     }
 
-    private static void createMainWindow() throws Exception {
+    private static void createMainWindow() {
+
 
         Scene scene = new Scene((Parent) createElementMainWindow(), 1230, 700);
         scene.getStylesheets().add(PATH_TO_STYLE);
 
         pPrimaryStage.setScene(scene);
         pPrimaryStage.show();
-    }
 
-    public static void main(String[] args) {
-        launch(args);
     }
 
     public void start(Stage primaryStage) throws Exception {
@@ -370,6 +374,10 @@ public class App extends Application {
         pPrimaryStage.setTitle("Yandex News");
         pPrimaryStage.setResizable(false);
         createMainWindow();
+    }
+
+    public static void main(String[] args) {
+        launch(args);
     }
 
 }

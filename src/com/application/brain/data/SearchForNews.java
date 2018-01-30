@@ -8,8 +8,14 @@ import java.util.List;
 
 public class SearchForNews {
 
-    private static final List<News> allNews = App.allNews;
-    //private static final List<News> allNews = new ArrayList<>();
+    private static List<News> allNews = App.allNews;
+    // private static List<News> allNews = new ArrayList<>();
+    // This line for tests
+
+    public static List<News> search(List<News> newsList, String string) {
+        allNews = newsList;
+        return search(string);
+    }
 
     public static List<News> search(String string) {
         List<News> answer = new ArrayList<>();

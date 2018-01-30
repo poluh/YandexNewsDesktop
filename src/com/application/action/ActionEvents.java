@@ -35,7 +35,7 @@ public class ActionEvents {
                 alert.setContentText("Check your Internet connection.");
                 alert.showAndWait();
             } catch (Exception e) {
-                throw new IllegalArgumentException("Error = " + e.getMessage());
+                throw new IllegalArgumentException("Error = " + e.getMessage() + " in " + e.getLocalizedMessage());
             }
         });
     }
@@ -52,6 +52,18 @@ public class ActionEvents {
         });
     }
 
+    private static void eventError(Button button, GridPane mainGrid, List<Node> nodes) {
+        try {
+            mainGrid.add(nodes.get(nodes.size() - 1), 1, 1);
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            for (Node node : nodes) {
+                mainGrid.getChildren().remove(node);
+            }
+            nodes.clear();
+            button.setVisible(false);
+        }
+    }
+
     public static void toBack(Button button, GridPane mainGrid, List<Node> nodes) {
         button.setOnAction(event -> {
             mainGrid.getChildren().remove(nodes.get(nodes.size() - 1));
@@ -60,28 +72,21 @@ public class ActionEvents {
                 mainGrid.add(nodes.get(nodes.size() - 1), 1, 1);
                 button.setVisible(false);
             } else {
-                try {
-                    mainGrid.add(nodes.get(nodes.size() - 1), 1, 1);
-                } catch (ArrayIndexOutOfBoundsException e) {
-                    for (Node node : nodes) {
-                        mainGrid.getChildren().remove(node);
-                    }
-                    nodes.clear();
-                    button.setVisible(false);
-                }
+                eventError(button, mainGrid, nodes);
             }
         });
     }
 
-    public static void toCategory(Button button, GridPane mainGrid, List<Node> nodes) {
+    public static void toCategory(Button button, GridPane mainGrid, List<Node> nodes, Button toBack) {
         button.setOnAction(event -> {
             try {
                 mainGrid.getChildren().remove(nodes.get(nodes.size() - 1));
                 createCategoriesWindow(categoryLink, mainGrid);
                 button.setVisible(false);
+                toBack.setVisible(false);
                 nodes.clear();
             } catch (Exception e) {
-                throw new IllegalArgumentException(e.getMessage());
+                eventError(button, mainGrid, nodes);
             }
         });
     }
@@ -121,6 +126,9 @@ public class ActionEvents {
         textField.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ENTER) {
                 createFoundNewsWindow(search(textField.getText()));
+                textField.clear();
+                textField.setFocusTraversable(false);
+                textField.requestFocus();
             }
         });
     }

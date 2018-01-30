@@ -71,6 +71,8 @@ public class GetPages {
                 news.setDate(rowNews.selectFirst(".story__date").text());
                 news.setLink(YANDEX + rowNews.selectFirst(".story__topic h2 a").attr("href"));
                 news.setDescription("");
+//                news.setTag(rowNews.selectFirst(".rubric-label__dot").text());
+//                System.out.println(news.getTag());
 
                 String imgSrc = "";
                 try {
@@ -108,6 +110,8 @@ public class GetPages {
         news.setDescription(rowNews.selectFirst(".story__main .doc__text").text());
         news.setAgency(rowNews.selectFirst(".story__main .doc__content a .doc__info .doc__agency").text());
         news.setDate(rowNews.selectFirst(".story__main .doc__content a .doc__info .doc__time").text());
+
+
         news.setLink(link);
 
         if (rowNews.selectFirst(".citation") != null) {

@@ -8,7 +8,7 @@ import java.util.Set;
 
 public class News {
 
-    private String title, description, agency, date, link, imgO;
+    private String title, description, agency, date, link, imgO, tag;
     private List<String> img;
     private Citation citation;
 
@@ -115,6 +115,14 @@ public class News {
 
     public int hashCode() {
         return title.hashCode() & date.hashCode() & 1234567890;
+    }
+
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
     }
 
     @Override
