@@ -4,11 +4,16 @@ import com.application.brain.data.auxiliaryClasses.Citation;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class News {
 
-    private String title, description, agency, date, link, imgO, tag;
+    private String title;
+    private String description;
+    private String agency;
+    private String date;
+    private String link;
+    private String originalLink;
+    private String imgO;
     private List<String> img;
     private Citation citation;
 
@@ -28,6 +33,24 @@ public class News {
         this.date = date;
         this.link = link;
         this.imgO = imgO;
+    }
+
+    public News(String title, String date) {
+        this.title = title;
+        this.date = date;
+    }
+
+    public News(String title, String description, String date) {
+        this.title = title;
+        this.date = date;
+        this.description = description;
+    }
+
+    public News(String title, String description, String agency, String date) {
+        this.title = title;
+        this.description = description;
+        this.agency = agency;
+        this.date = date;
     }
 
     public News() {
@@ -117,16 +140,17 @@ public class News {
         return title.hashCode() & date.hashCode() & 1234567890;
     }
 
-    public String getTag() {
-        return tag;
+    public String getOriginalLink() {
+        return originalLink;
     }
 
-    public void setTag(String tag) {
-        this.tag = tag;
+    public void setOriginalLink(String originalLink) {
+        this.originalLink = originalLink;
     }
 
     @Override
     public String toString() {
-        return title + "\n" + description + "\n" + agency + " : " + date;
+        return title + "\n" + (description != null && !description.isEmpty() ? description : "") + "\n"
+                + (agency != null && !agency.isEmpty() ? agency + " : " : "") + date;
     }
 }

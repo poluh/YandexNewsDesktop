@@ -18,11 +18,12 @@ public class ActionEvents {
 
     private static String categoryLink = "";
 
-    public static void categoriesButton(Button mainButton, GridPane grid, GridPane leftGrid) {
+    public static void categoriesButton(Button mainButton, GridPane grid, GridPane leftGrid, Button toCategoty) {
         mainButton.setOnAction(event -> {
             try {
                 createCategoriesWindow(mainButton.getId(), grid);
                 categoryLink = mainButton.getId();
+                toCategoty.setVisible(false);
                 mainButton.setDisable(true);
                 for (Node node : leftGrid.getChildren()) {
                     if (node != mainButton) {
@@ -84,7 +85,9 @@ public class ActionEvents {
                 createCategoriesWindow(categoryLink, mainGrid);
                 button.setVisible(false);
                 toBack.setVisible(false);
+                Node buff = nodes.get(0);
                 nodes.clear();
+                nodes.add(buff);
             } catch (Exception e) {
                 eventError(button, mainGrid, nodes);
             }

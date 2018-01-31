@@ -1,13 +1,25 @@
 package com.application.brain.data;
 
 import com.application.brain.data.auxiliaryClasses.Category;
+import com.application.news.News;
+import com.sun.tools.javac.util.List;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class GetPagesTest {
+
+    private final static String LINK_TO_NEWS = "https://news.yandex.ru/yandsearch?lr=" +
+            "68&cl4url=https%3A%2F%2Fwww.gazeta.ru%2Fscience%2F2018%2F01%2F31_a_11631889." +
+            "shtml&lang=ru&stid=YlZwH7mYM_9xFUzBQ6J8&rubric=index&from=index";
+    private final static String PATH_TO_NEWS = "test/res/NASANews.html";
+    private final static String LINK_TO_MAIN_PAGE = "https://news.yandex.ru";
+    private final static String PATH_TO_MAIN_HTML = "test/res/htmlNews.html";
+
+
     @Test
     void getListCategories() throws Exception {
         assertEquals(Arrays.asList(
@@ -23,23 +35,28 @@ class GetPagesTest {
                 new Category("Технологии", "https://news.yandex.ru/computers.html?from=index"),
                 new Category("Наука", "https://news.yandex.ru/science.html?from=index"),
                 new Category("Авто", "https://news.yandex.ru/auto.html?from=index")).toString(),
-                GetPages.getListCategories("https://news.yandex.ru").toString());
+                GetPages.getListCategories(LINK_TO_MAIN_PAGE).toString());
     }
 
     @Test
     void getListNews() {
+        assertEquals(Collections.singletonList(new News("Эксперты составили Топ-10 самых дешевых иномарок в России",
+                        "Обновлено в 06:09")).toString(),
+                GetPages.getListNews(PATH_TO_MAIN_HTML).toString());
     }
 
     @Test
     void getNews() {
+        assertEquals(new News("Жители Земли наблюдают суперлуние",
+                "В среду, 31 января, жители Земли станут свидетелями редчайшего астрономического явления —" +
+                        " полного лунного затмения во время полнолуния и суперлуния.",
+                        "RT на русском", "вчера в 21:13").toString(),
+                GetPages.getNews(LINK_TO_NEWS).toString());
     }
 
     @Test
     void getInterestingNews() {
-    }
-
-    @Test
-    void main() {
+        assertEquals(Collections.emptyList(), GetPages.getInterestingNews(PATH_TO_NEWS));
     }
 
 }

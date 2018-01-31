@@ -71,16 +71,18 @@ public class App extends Application {
     }
 
     // TODO
-    private static void cachingCategories(List<Category> categories) {
-        for (Category category : categories) {
-            try {
-                cacheCategories.put(category.getLink(), getListNews(category.getLink()));
-            } catch (Exception e) {
-                e.printStackTrace();
+    private static void cachingCategories() {
+        List<Category> categories;
+        try {
+            categories = getListCategories(MAIN_PAGE);
+            for (Category category : categories) {
+                cacheCategories.put(category.getLink(), News.divideAndRule(getListNews(category.getLink())));
+                System.out.println("Cache " + category.getLink());
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-}
+    }
 
     // Ease created horizontal box for the text object
     private static HBox createNewsComponent(Label label, boolean isMainNews) {
@@ -102,16 +104,12 @@ public class App extends Application {
         return gridPane;
     }
 
-    private static Node createElementMainWindow() {
+    private static void createElementMainWindow() {
 
         Platform.runLater(() -> {
 
-            // Pane's for the categories and search, the toBack
-            GridPane leftGrid = new GridPane();
-            GridPane upGrid = new GridPane();
 
-            leftGrid.getStyleClass().add("left-grid");
-            leftGrid.setMinHeight(800);
+            GridPane upGrid = new GridPane();
 
             Label categoryLabel = new Label("Категории");
             categoryLabel.setId("categories");
@@ -136,7 +134,16 @@ public class App extends Application {
             upGrid.add(createHBox(toBack, Pos.CENTER_RIGHT), 3, 0);
             mainGrid.add(upGrid, 0, 0, 4, 1);
 
-            // Append categories on left-pane
+        });
+
+    }
+
+    private static void appendLeftPaneOnMainWindow() {
+        // Append categories on left-pane
+        Platform.runLater(() -> {
+            GridPane leftGrid = new GridPane();
+            leftGrid.getStyleClass().add("left-grid");
+            leftGrid.setMinHeight(800);
             int i = 0;
             try {
                 for (Category category : getListCategories(MAIN_PAGE)) {
@@ -144,18 +151,15 @@ public class App extends Application {
                     Button categoryButton = new Button(category.getName());
                     categoryButton.setMinSize(140, 50);
                     categoryButton.setId(category.getLink());
-                    categoriesButton(categoryButton, mainGrid, leftGrid);
+                    categoriesButton(categoryButton, mainGrid, leftGrid, toCategory);
 
                     leftGrid.add(categoryButton, 0, i);
                     i++;
                 }
             } catch (Exception ignored) {
             }
-
             mainGrid.add(leftGrid, 0, 1);
-
         });
-        return mainGrid;
     }
 
     private static void createInterestingNews(String link, GridPane defaultGrid) throws IOException {
@@ -271,23 +275,24 @@ public class App extends Application {
             Image image = new Image(citation.getImage());
             shapeImage.setFill(new ImagePattern(image));
 
-            // Pane for the citation
-            GridPane miniGrid = createGrid();
-            miniGrid.add(shapeImage, 0, 3);
-            miniGrid.add(createNewsComponent(text, false), 1, 3);
-            miniGrid.add(createNewsComponent(info, false), 1, 4);
-            miniGrid.setId("citation-grid");
+            GridPane citationGrid = createGrid();
+            citationGrid.add(shapeImage, 0, 3);
+            citationGrid.add(createNewsComponent(text, false), 1, 3);
+            citationGrid.add(createNewsComponent(info, false), 1, 4);
+            citationGrid.setId("citation-grid");
 
-            gridPane.add(miniGrid, 0, 4, 3, 1);
+            gridPane.add(citationGrid, 0, 4, 3, 1);
         }
         Button openDefaultBrowser = new Button("Открыть новость на Яндекс");
         openDefaultBrowser.setId("open-browser");
         openDefaultBrowser(openDefaultBrowser, news.getLink());
+        gridPane.add(createHBox(openDefaultBrowser, Pos.TOP_CENTER), 0, 5, 3, 1);
 
-        HBox boxODBBtn = new HBox();
-        boxODBBtn.getChildren().add(openDefaultBrowser);
-        boxODBBtn.setAlignment(Pos.TOP_CENTER);
-        gridPane.add(boxODBBtn, 0, 5, 3, 1);
+        Button openOriginalRes = new Button("Открыть новость в источнике (" + news.getAgency() + ")");
+        openOriginalRes.setId("open-browser");
+        openDefaultBrowser(openOriginalRes, news.getOriginalLink());
+        gridPane.add(createHBox(openOriginalRes, Pos.TOP_CENTER), 0, 6, 3, 1);
+
 
         createGridPaneOnVBox(gridPane);
     }
@@ -301,12 +306,16 @@ public class App extends Application {
         } catch (Exception ignored) {
         }
 
+        System.out.println("Open category " + link);
+        System.out.println("Category in cache = " + cacheCategories.containsKey(link));
 
         GridPane gridPane = createGrid();
 
         int i = 0, j = 0;
         boolean isMainNews = true;
-        List<News> newsList = cacheCategories.containsKey(link) ? cacheCategories.get(link) : News.divideAndRule(getListNews(link));
+        List<News> newsList;
+        if (cacheCategories.containsKey(link)) newsList = cacheCategories.get(link);
+        else newsList = News.divideAndRule(getListNews(link));
 
         for (News news : newsList) {
             allNews.add(news);
@@ -360,8 +369,9 @@ public class App extends Application {
 
     private static void createMainWindow() {
 
-
-        Scene scene = new Scene((Parent) createElementMainWindow(), 1230, 700);
+        createElementMainWindow();
+        appendLeftPaneOnMainWindow();
+        Scene scene = new Scene(mainGrid, 1230, 700);
         scene.getStylesheets().add(PATH_TO_STYLE);
 
         pPrimaryStage.setScene(scene);
@@ -369,11 +379,14 @@ public class App extends Application {
 
     }
 
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage primaryStage) {
+
         pPrimaryStage = primaryStage;
         pPrimaryStage.setTitle("Yandex News");
         pPrimaryStage.setResizable(false);
         createMainWindow();
+
+        Platform.runLater(App::cachingCategories);
     }
 
     public static void main(String[] args) {
